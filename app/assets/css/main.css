@@ -1,0 +1,26 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+@theme {
+    --font-sans: "Rubik", "Helvetica", "Arial", "sans-serif"; 
+    --font-time-signature: 'Bravura Time Signature Subset';
+}
+
+:root {
+  --ui-primary:  var(--color-blue-600);
+
+}
+
+.dark {
+  --ui-primary:  var(--color-sky-300);
+  --ui-bg: var(--color-old-neutral-950);
+}
+
+html, body {
+  @apply h-full;
+}
+
+button {
+    @apply cursor-pointer;
+}
+

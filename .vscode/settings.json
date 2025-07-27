@@ -1,31 +1,18 @@
 {
-    "workbench.colorCustomizations": {
-        "activityBar.activeBackground": "#d9668e",
-        "activityBar.background": "#d9668e",
-        "activityBar.foreground": "#15202b",
-        "activityBar.inactiveForeground": "#15202b99",
-        "activityBarBadge.background": "#346619",
-        "activityBarBadge.foreground": "#e7e7e7",
-        "commandCenter.border": "#e7e7e799",
-        "editorGroup.border": "#d9668e",
-        "panel.border": "#d9668e",
-        "sash.hoverBorder": "#d9668e",
-        "sideBar.border": "#d9668e",
-        "statusBar.background": "#cf3d70",
-        "statusBar.border": "#cf3d70",
-        "statusBar.debuggingBackground": "#3dcf9c",
-        "statusBar.debuggingBorder": "#3dcf9c",
-        "statusBar.debuggingForeground": "#15202b",
-        "statusBar.foreground": "#e7e7e7",
-        "statusBarItem.hoverBackground": "#d9668e",
-        "statusBarItem.remoteBackground": "#cf3d70",
-        "statusBarItem.remoteForeground": "#e7e7e7",
-        "tab.activeBorder": "#d9668e",
-        "titleBar.activeBackground": "#cf3d70",
-        "titleBar.activeForeground": "#e7e7e7",
-        "titleBar.border": "#cf3d70",
-        "titleBar.inactiveBackground": "#cf3d7099",
-        "titleBar.inactiveForeground": "#e7e7e799"
+    "files.associations": {
+        "*.css": "tailwindcss"
     },
-    "peacock.color": "#cf3d70"
+    "editor.quickSuggestions": {
+        "strings": "on"
+    },
+    "tailwindCSS.classAttributes": [
+        "class",
+        "ui"
+    ],
+    "tailwindCSS.experimental.classRegex": [
+        [
+            "ui:\\s*{([^)]*)\\s*}",
+            "(?:'|\"|`)([^']*)(?:'|\"|`)"
+        ]
+    ]
 }

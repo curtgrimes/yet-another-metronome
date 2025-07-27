@@ -5,6 +5,8 @@
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare"
@@ -14,8 +16,10 @@
     "@nuxt/image": "1.10.0",
     "@nuxt/test-utils": "3.19.2",
     "@nuxt/ui": "3.3.0",
+    "@vueuse/core": "^13.5.0",
     "eslint": "^9.31.0",
     "nuxt": "^4.0.1",
+    "tailwindcss": "^4.1.11",
     "typescript": "^5.8.3",
     "vue": "^3.5.17",
     "vue-router": "^4.5.1"

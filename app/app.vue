@@ -1,6 +1,8 @@
 <template>
-  <div>
-    <NuxtRouteAnnouncer />
-    <NuxtWelcome />
-  </div>
+  <UApp>
+    <div class="flex flex-col h-full">
+      <Navbar />
+      <Canvas />
+    </div>
+  </UApp>
 </template>
