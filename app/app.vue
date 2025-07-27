@@ -1,8 +1,8 @@
 <template>
-  <UApp>
-    <div class="flex flex-col h-full">
-      <Navbar />
-      <Canvas />
-    </div>
-  </UApp>
+    <UApp>
+        <div class="flex flex-col h-full">
+            <Navbar />
+            <Canvas />
+        </div>
+    </UApp>
 </template>

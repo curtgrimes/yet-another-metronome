@@ -1,20 +1,20 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
 
-  modules: [
-    '@nuxt/eslint',
-    '@nuxt/image',
-    '@nuxt/test-utils',
-    '@nuxt/ui',
-  ],
-  devtools: { enabled: true },
+    modules: [
+        '@nuxt/eslint',
+        '@nuxt/image',
+        '@nuxt/ui',
+        '@nuxt/test-utils/module',
+    ],
+    devtools: { enabled: true },
 
-  css: ['~/assets/css/main.css'],
-  compatibilityDate: '2025-07-15',
+    css: ['~/assets/css/main.css'],
+    compatibilityDate: '2025-07-15',
 
-  app: {
-    rootAttrs: {
-      class: 'h-full',
-    }
-  }
-})
+    app: {
+        rootAttrs: {
+            class: 'h-full',
+        },
+    },
+});
