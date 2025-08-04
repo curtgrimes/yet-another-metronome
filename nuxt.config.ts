@@ -9,12 +9,23 @@ export default defineNuxtConfig({
     ],
     devtools: { enabled: true },
 
-    css: ['~/assets/css/main.css'],
+    css: [
+        '~/assets/css/main.css',
+        'vue-color/style.css',
+    ],
     compatibilityDate: '2025-07-15',
+
+    pages: true,
 
     app: {
         rootAttrs: {
             class: 'h-full',
+        },
+    },
+
+    vite: {
+        build: {
+            minify: false,
         },
     },
 });

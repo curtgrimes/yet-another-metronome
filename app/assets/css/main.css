@@ -7,12 +7,12 @@
 }
 
 :root {
-  --ui-primary:  var(--color-blue-600);
+  --ui-primary:  var(--color-blue-700);
 
 }
 
 .dark {
-  --ui-primary:  var(--color-sky-300);
+  --ui-primary:  var(--color-slate-200);
   --ui-bg: var(--color-old-neutral-950);
 }
 

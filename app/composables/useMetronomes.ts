@@ -13,12 +13,19 @@ export const useMetronomes = createGlobalState(() => {
 
     const metronomes = ref<Metronome[]>([
         {
-            title: 'Yet Another Metronome',
-            bpm: 120,
-            timeSignature: [4, 4],
-            style: {
-                id: 'rectangle',
-                colorBackground: "#770000",
+            configuration: {
+                title: 'Yet Another Metronome',
+                bpm: 60,
+                timeSignature: [4, 4],
+                style: {
+                    id: 'rectangle',
+                    colorBackground: "#5522aa",
+                },
+                startAutomatically: false,
+            },
+            state: {
+                paused: false,
+                visibleInMainView: true,
             },
         },
     ]);

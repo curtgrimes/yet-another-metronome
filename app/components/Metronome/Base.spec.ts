@@ -8,13 +8,14 @@ describe('MetronomeBase', () => {
     const mountComponent = (overrides: Parameters<typeof shallowMount<typeof Base>>[1] = {}) => shallowMount(Base, defu(overrides, {
         props: {
             modelValue: {
-                title: "Test Metronome",
-                bpm: 0,
-                timeSignature: [0,0],
-                style: {
-                    id: 'rectangle',
-                    colorBackground: "#ffffff",
-                },
+                configuration: {
+                    title: "Test Metronome",
+                    bpm: 0,
+                    timeSignature: [0,0],
+                    style: {
+                        id: 'rectangle',
+                        colorBackground: "#ffffff",
+                    }},
             } as Metronome,
         },
         global: {},
@@ -26,6 +27,11 @@ describe('MetronomeBase', () => {
     it('has a named Tailwind group "metronome-base" at the top level', () => {
         const wrapper = mountComponent();
         expect(wrapper.classes()).includes('group/metronome-base');
+    });
+
+    it('has relative positioning so children can use absolute positioning', () => {
+        const wrapper = mountComponent();
+        expect(wrapper.classes()).includes('relative');
     });
     
     describe('quick setting buttons area', () => {

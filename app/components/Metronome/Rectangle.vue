@@ -1,34 +1,22 @@
 <script setup lang="ts">
 import type { Metronome, MetronomeStyleRectangle } from '~/types';
+import { HueSlider } from 'vue-color';
 
 const metronome = defineModel<Metronome<MetronomeStyleRectangle>>({ required: true });
 
-const { tick } = useMetronome(metronome);
+const { showControls = true } = defineProps<{showControls?: boolean}>();
 
-const backgroundColor = (tick: boolean) => {
-    return tick ? metronome.value.style.colorBackground : lighten(metronome.value.style.colorBackground, 80);
-};
+const { onTick, enabled, millisecondsBetweenTicks } = useMetronome(metronome);
 
-const textColor = (tick: boolean) => {
-    // Parse hex color string to RGB array
-    const hexValue = backgroundColor(tick).replace('#', '');
-    const r = parseInt(hexValue.substring(0, 2), 16);
-    const g = parseInt(hexValue.substring(2, 4), 16);
-    const b = parseInt(hexValue.substring(4, 6), 16);
+const TICK_LENGTH_MS = 100;
+const ticking = ref(false);
 
-    // Relative luminance weights from the YIQ color model
-    const redWeight = 0.299;
-    const greenWeight = 0.587;
-    const blueWeight = 0.114;
+onTick(() => {
+    ticking.value = true;
+    
 
-    // Perceived brightness calculation
-    const brightness = r * redWeight + g * greenWeight + b * blueWeight;
-
-    // Midpoint threshold to decide between black and white text
-    const threshold = 128;
-
-    return brightness > threshold ? 'text-black' : 'text-white';
-};
+    setTimeout(() => ticking.value = false, TICK_LENGTH_MS);
+});
 
 const lighten = (hex: string, percent: number) => {
     const num = parseInt(hex.replace('#', ''), 16);
@@ -44,24 +32,56 @@ const lighten = (hex: string, percent: number) => {
     ).toString(16).slice(1);
 };
 
+const colorBackground = computed(() => metronome.value.configuration.style.colorBackground);
 </script>
 
 <template>
     <MetronomeBase
         v-model="metronome"
-        :text-color="textColor(tick)">
+        text-classes="text-black dark:text-white"
+        :show-controls
+        :style="{
+            '--side-to-side-duration': `${millisecondsBetweenTicks * 2}ms`,
+            '--ticking-background-color': lighten(colorBackground, -20),
+            '--ticking-background-color-dark-mode': lighten(colorBackground, 50),
+            '--ticking-border-color': lighten(colorBackground, -40),
+            '--ticking-border-color-dark-mode': lighten(colorBackground, 50),
+            '--not-ticking-background-color': lighten(colorBackground, 70),
+            '--not-ticking-background-color-dark-mode': lighten(colorBackground, -45),
+            '--text-color': lighten(colorBackground, -30),
+            '--text-color-dark-mode': lighten(colorBackground, 50),
+        }"
+    >
         <template #default>
-            <div
-                :style="{ backgroundColor: backgroundColor(tick) }"
-                :class="['rounded-3xl w-full h-full flex items-center justify-center font-bold text-3xl shadow-[0_0_50px_-5px_inset_#0001]', textColor(tick)]"
+            <div   
+                v-if="enabled" 
+                :class="['rounded-3xl relative w-full h-full flex items-center justify-center font-bold text-5xl shadow-[0_0_50px_-5px_inset_#0001] overflow-hidden text-[var(--text-color)] dark:text-[var(--text-color-dark-mode)]', metronome.state.paused && '!animate-none !bg-[var(--not-ticking-background-color)]']"
+                data-animate-flash
             >
-                {{ metronome.title }}
+                <textarea
+                    v-model="metronome.configuration.title"
+                    :disabled="!showControls"
+                    class="w-full mx-20 resize-none text-center field-sizing-content"
+                />
+                <div
+                    ref="side-to-side-effect"
+                    data-animate-side-to-side-indicator-parent
+                    :class="['absolute will-change-transform inset-0 pointer-events-none', metronome.state.paused && '!animate-none translate-x-1/8']"
+                    :style="{
+                        '--width': 'calc(var(--spacing) * 4)'
+                    }"
+                >
+                    <div
+                        data-animate-side-to-side-indicator
+                        :class="['absolute will-change-transform h-full left-0 w-4 bg-[var(--ticking-background-color)] opacity-60', metronome.state.paused && '!animate-none']"
+                    />
+                </div>
             </div>
         </template>
         <template #floating-settings>
             <MetronomeQuickSettingButton
                 tooltip="Change color"
-                :popover-props="{ content: { align: 'start' } }">
+            >
                 <UIcon
                     name="i-ic-outline-palette"
                     data-palette-icon
@@ -69,12 +89,7 @@ const lighten = (hex: string, percent: number) => {
                     class="text-2xl transition-none"
                 />
                 <template #popover>
-                    <div class="p-2">
-                        <UColorPicker
-                            v-model="metronome.style.colorBackground"
-                            format="hex"
-                            size="xs" />
-                    </div>
+                    <ColorInput v-model="metronome.configuration.style.colorBackground" />
                 </template>
             </MetronomeQuickSettingButton>
         </template>
@@ -99,5 +114,60 @@ const lighten = (hex: string, percent: number) => {
 
 :deep([data-palette-icon] circle:nth-of-type(4)) {
     @apply fill-blue-400;
+}
+
+@keyframes flash {
+  0%, 50% {
+    background-color: var(--ticking-background-color);
+    box-shadow:
+        0 0 0 5px inset var(--ticking-border-color),
+        0 0 0 10px inset var(--not-ticking-background-color);
+  }
+
+  30%, 49%, 80%, 100% {
+    box-shadow: none;
+  }
+
+  10%, 49%, 60%, 100% {
+    background-color: var(--not-ticking-background-color);
+  }
+}
+
+@keyframes side-to-side-parent {
+  0%, 3%, 100% {
+    transform: translateX(0%);
+  }
+  50%, 53% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes side-to-side {
+  0%, 3%, 100% {
+    transform: translateX(0%);
+  }
+  50%, 53% {
+    transform: translateX(-100%);
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-animate-flash] {
+    --ticking-background-color: var(--ticking-background-color-dark-mode);
+    --not-ticking-background-color: var(--not-ticking-background-color-dark-mode);
+    --ticking-border-color: var(--ticking-border-color-dark-mode);
+  }
+}
+
+[data-animate-flash] {
+    animation: flash var(--side-to-side-duration) linear infinite;
+}
+
+[data-animate-side-to-side-indicator-parent] {
+    animation: side-to-side-parent var(--side-to-side-duration) linear infinite;
+}
+
+[data-animate-side-to-side-indicator] {
+    animation: side-to-side var(--side-to-side-duration) linear infinite;
 }
 </style>

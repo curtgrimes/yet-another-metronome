@@ -7,11 +7,22 @@ export type MetronomeStyleId = 'rectangle';
 export type MetronomeStyle =
   | MetronomeStyleRectangle;
 
-export interface Metronome<TStyle extends MetronomeStyle = MetronomeStyle> {
+export interface MetronomeConfiguration<TStyle extends MetronomeStyle = MetronomeStyle> {
   title: string;
   bpm: number;
   timeSignature: TimeSignature;
   style: TStyle;
+  startAutomatically: boolean;
+}
+
+interface MetronomeState {
+  paused: boolean;
+  visibleInMainView: boolean;
+}
+
+export interface Metronome<TStyle extends MetronomeStyle = MetronomeStyle> {
+  configuration: MetronomeConfiguration<TStyle>,
+  state: MetronomeState
 }
 
 /**

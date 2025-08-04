@@ -14,25 +14,26 @@
   },
   "dependencies": {
     "@nuxt/eslint": "1.7.1",
-    "@nuxt/image": "1.10.0",
+    "@nuxt/image": "1.11.0",
     "@nuxt/ui": "3.3.0",
-    "@vueuse/core": "^13.5.0",
-    "eslint": "^9.31.0",
-    "nuxt": "^4.0.1",
+    "@vueuse/core": "^13.6.0",
+    "eslint": "^9.32.0",
+    "nuxt": "^4.0.2",
     "tailwindcss": "^4.1.11",
-    "typescript": "^5.8.3",
-    "vue": "^3.5.17",
+    "typescript": "^5.9.2",
+    "vue": "^3.5.18",
+    "vue-color": "^3.3.1",
     "vue-router": "^4.5.1"
   },
-  "packageManager": "pnpm@10.13.1+sha512.37ebf1a5c7a30d5fabe0c5df44ee8da4c965ca0c5af3dbab28c3a1681b70a256218d05c81c9c0dcf767ef6b8551eb5b960042b9ed4300c59242336377e01cfad",
+  "packageManager": "pnpm@10.14.0",
   "devDependencies": {
     "@nuxt/test-utils": "^3.19.2",
-    "@vitejs/plugin-vue": "^6.0.0",
+    "@vitejs/plugin-vue": "^6.0.1",
     "@vitest/ui": "3.2.4",
     "@vue/test-utils": "^2.4.6",
     "defu": "^6.1.4",
     "happy-dom": "^18.0.1",
-    "playwright-core": "^1.54.1",
+    "playwright-core": "^1.54.2",
     "vitest": "^3.2.4"
   }
 }

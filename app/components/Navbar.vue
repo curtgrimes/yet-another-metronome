@@ -19,11 +19,12 @@ const editPerformTabItems = ref<TabsItem[]>([
 const mode = ref<'edit' | 'perform'>('edit');
 
 const minimizeNavbar = ref(false);
-
+const viewTransitionName = ref<'navbar-minimize' | undefined>();
 watch(mode, () => {
+    viewTransitionName.value = 'navbar-minimize';
     document.startViewTransition(async () => {
         minimizeNavbar.value = mode.value === 'perform';
-    });
+    }).finished.finally(() => (viewTransitionName.value = undefined));
 });
 </script>
 
@@ -35,11 +36,12 @@ watch(mode, () => {
         >
             <UButton
                 v-if="minimizeNavbar"
-                :style="{ viewTransitionName: 'navbar-minimize' }"
+                :style="{ viewTransitionName }"
                 size="lg"
                 class="absolute top-4 right-4 aspect-square rounded-full text-xl p-2"
                 variant="soft"
-                @click="mode = 'edit'">
+                @click="mode = 'edit'"
+            >
                 <UIcon name="i-mingcute-settings-7-line" />
             </UButton>
         </UTooltip>
@@ -47,14 +49,16 @@ watch(mode, () => {
             v-if="!minimizeNavbar"
             variant="soft"
             class="max-w-4xl mx-auto mt-4 backdrop-blur-2xl"
-            :style="{ viewTransitionName: 'navbar-minimize' }">
+            :style="{ viewTransitionName }"
+        >
             <div class="flex gap-4">
                 <UPopover mode="hover">
                     <UButton
                         size="lg"
                         icon="i-mingcute-add-line"
                         label="Add Metronome"
-                        variant="soft" />
+                        variant="soft"
+                    />
 
                     <template #content>
                         Hello world
@@ -64,15 +68,18 @@ watch(mode, () => {
                     size="lg"
                     icon="i-mingcute-layout-3-line"
                     label="Edit Layout"
-                    variant="ghost" />
+                    variant="ghost"
+                />
                 <UPopover
                     mode="hover"
-                    :dismissible="false">
+                    :dismissible="false"
+                >
                     <UTabs
                         v-model="mode"
                         :content="false"
                         :items="editPerformTabItems"
-                        class="ml-auto">
+                        class="ml-auto"
+                    >
                         <template #default="{ item }">
                             {{ item.label }}
                         </template>
@@ -81,11 +88,13 @@ watch(mode, () => {
                         <div class="p-4 flex flex-col gap-4 text-sm">
                             <div
                                 v-for="(item, index) in editPerformTabItems"
-                                :key="index">
+                                :key="index"
+                            >
                                 <h3 class="font-bold flex items-center gap-2">
                                     <UIcon
                                         :name="item.icon!"
-                                        class="w-4" /> {{ item.label }}
+                                        class="w-4"
+                                    /> {{ item.label }}
                                 </h3>
                                 <p class="ml-6">
                                     {{ item.description }}
@@ -106,12 +115,5 @@ watch(mode, () => {
 ::view-transition-new(navbar-minimize) {
   height: 100%;
   filter: blur(3px);
-}
-
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation: none !important;
-  mix-blend-mode: normal !important;
-  opacity: 1 !important;
 }
 </style>

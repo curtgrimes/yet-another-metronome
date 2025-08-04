@@ -15,11 +15,14 @@ const { tooltip = undefined, popoverProps = {} } = defineProps<{
                 :text="tooltip"
                 :delay-duration="0"
                 :content="{ side: 'right' }"
-                :disabled="popoverOpen">
+                :disabled="popoverOpen"
+            >
                 <UButton
+                    v-bind="$attrs"
                     variant="ghost"
                     color="neutral"
-                    :class="['aspect-square w-10 p-1 rounded-xl hover:bg-default focus-visible:bg-default hover:!text-(--ui-text) focus-visible:!text-(--ui-text)  aria-expanded:!text-(--ui-text) text-xs flex items-center justify-center font-black !text-inherit transition-none', popoverOpen && '!bg-default opacity-100']">
+                    :class="['aspect-square w-10 p-1 rounded-xl hover:bg-default focus-visible:bg-default hover:!text-(--ui-text) focus-visible:!text-(--ui-text)  aria-expanded:!text-(--ui-text) text-xs flex items-center justify-center font-black !text-inherit transition-none', popoverOpen && '!bg-default opacity-100']"
+                >
                     <slot />
                 </UButton>
             </UTooltip>

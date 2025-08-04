@@ -20,6 +20,10 @@ export default withNuxt(
                 alignAttributesVertically: true,
                 ignores: [],
             }],
+            'vue/html-closing-bracket-newline': ['error', {
+                singleline: 'never',
+                multiline: 'always',
+            }],
             'indent': ['error', 4],
             'comma-dangle': ['error', 'always-multiline'],
             'semi': ['error', 'always'],
