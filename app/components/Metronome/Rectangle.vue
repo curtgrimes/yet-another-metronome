@@ -1,10 +1,15 @@
 <script setup lang="ts">
 import type { Metronome, MetronomeStyleRectangle } from '~/types';
-import { HueSlider } from 'vue-color';
 
 const metronome = defineModel<Metronome<MetronomeStyleRectangle>>({ required: true });
 
-const { showControls = true } = defineProps<{showControls?: boolean}>();
+const {
+    showControls = true,
+    showSettingsSectionOnly = undefined,
+} = defineProps<{
+    showControls?: boolean,
+    showSettingsSectionOnly?: 'tempo-rhythm' | 'appearance';
+}>();
 
 const { onTick, enabled, millisecondsBetweenTicks } = useMetronome(metronome);
 
@@ -13,8 +18,6 @@ const ticking = ref(false);
 
 onTick(() => {
     ticking.value = true;
-    
-
     setTimeout(() => ticking.value = false, TICK_LENGTH_MS);
 });
 
@@ -40,6 +43,7 @@ const colorBackground = computed(() => metronome.value.configuration.style.color
         v-model="metronome"
         text-classes="text-black dark:text-white"
         :show-controls
+        :show-settings-section-only
         :style="{
             '--side-to-side-duration': `${millisecondsBetweenTicks * 2}ms`,
             '--ticking-background-color': lighten(colorBackground, -20),
@@ -92,6 +96,12 @@ const colorBackground = computed(() => metronome.value.configuration.style.color
                     <ColorInput v-model="metronome.configuration.style.colorBackground" />
                 </template>
             </MetronomeQuickSettingButton>
+        </template>
+        <template #settings-section-tempo-rhythm/>
+        <template #settings-section-appearance>
+            <EditField label="Color">
+                <ColorInput v-model="metronome.configuration.style.colorBackground" />
+            </EditField>
         </template>
     </MetronomeBase>
 </template>

@@ -4,7 +4,13 @@ import MetronomeRectangle from './Metronome/Rectangle.vue';
 
 const metronome = defineModel<Metronome>();
 
-const { showControls = true } = defineProps<{showControls?: boolean}>();
+const {
+    showControls = true,
+    showSettingsSectionOnly = undefined,
+} = defineProps<{
+    showControls?: boolean,
+    showSettingsSectionOnly?: 'tempo-rhythm' | 'appearance';
+}>();
 
 const emit = defineEmits<{ beforeUnmount: [] }>();
 
@@ -18,6 +24,7 @@ onBeforeUnmount(() => {
         v-if="metronome?.configuration.style.id === 'rectangle'"
         v-model="metronome"
         :show-controls
+        :show-settings-section-only
     />
     <div
         v-else

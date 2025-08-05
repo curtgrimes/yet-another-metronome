@@ -3,9 +3,14 @@ import type { Metronome, TimeSignature } from '~/types';
 
 const metronome = defineModel<Metronome>({ required: true });
 
-const { showControls = true, textClasses = '' } = defineProps<{
+const {
+    showControls = true,
+    textClasses = '',
+    showSettingsSectionOnly = undefined,
+} = defineProps<{
   textClasses?: string;
   showControls?: boolean;
+  showSettingsSectionOnly?: 'tempo-rhythm' | 'appearance';
 }>();
 
 const showSettingsModal = ref(false);
@@ -26,10 +31,23 @@ const handleViewTransition = (to: string) => {
 </script>
 
 <template>
+    <div v-if="showSettingsSectionOnly === 'tempo-rhythm'">
+        <slot
+            name="settings-section-tempo-rhythm"
+        />
+    </div>
+    <div v-else-if="showSettingsSectionOnly === 'appearance'">
+        <slot
+            name="settings-section-appearance"
+        />
+    </div>
     <div
+        v-else
         :class="['w-full h-full max-w-3xl min-h-3xl max-h-[70%] relative group/metronome-base', textClasses]"
         :style="{viewTransitionName: 'metronome-base'}"
     >
+        <slot  />
+
         <div
             v-if="showControls"
             data-quick-setting-buttons-container
@@ -42,12 +60,6 @@ const handleViewTransition = (to: string) => {
                 </div>
                 <template #popover>
                     <BPMInput v-model="metronome.configuration.bpm" />
-                </template>
-            </MetronomeQuickSettingButton>
-            <MetronomeQuickSettingButton tooltip="Change time signature">
-                <TimeSignature :time-signature="metronome.configuration.timeSignature" />
-                <template #popover>
-                    <TimeSignatureInput v-model="metronome.configuration.timeSignature" />
                 </template>
             </MetronomeQuickSettingButton>
             <slot name="floating-settings" />
@@ -67,6 +79,5 @@ const handleViewTransition = (to: string) => {
                 </MetronomeQuickSettingButton>
             </NuxtLink>
         </div>
-        <slot v-if="!showMetronomeInSettingsModalOnly" />
     </div>
 </template>

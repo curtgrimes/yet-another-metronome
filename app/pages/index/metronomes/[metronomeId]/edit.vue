@@ -27,14 +27,17 @@ const activeSections = ref(['0', '1']);
             :ui="{
                 body: 'p-0 sm:p-0',
                 header: 'absolute inset-x-0 border-0 h-16',
-                title: 'bg-shadow-big-blur'
             }"
             @after:leave="handleViewTransition('/')"
         >
             <template #body>
                 <div class="flex h-[90vh]">
                     <div 
-                        class="flex items-center w-full justify-center px-8 pt-18 pb-2 gap-4 flex-col bg-grid-pattern border-r border-default/50 shadow-2xl/5"
+                        :style="{  '--grid-pattern': 
+                            `linear-gradient(to right, var(--ui-bg-elevated) 1px, transparent 1px),
+                            linear-gradient(to bottom, var(--ui-bg-elevated) 1px, transparent 1px)`
+                        }"
+                        class="flex items-center w-full justify-center px-8 pt-18 pb-2 gap-4 flex-col bg-[length:20px_20px] bg-[position:10px_10px] bg-[image:var(--grid-pattern)] border-r border-default/50 shadow-2xl/5"
                     >
                         <Metronome
                             v-if="!metronomes[Number($route.params.metronomeId)]?.state.visibleInMainView"
@@ -63,39 +66,32 @@ const activeSections = ref(['0', '1']);
                                 {
                                     label: 'Tempo & Rhythm',
                                     icon: 'i-heroicons-musical-note-solid',
-                                    slot: 'tempoAndRhythm' as const,
+                                    slot: 'tempoRhythm' as const,
                                 },
                                 {
                                     label: 'Appearance',
                                     icon: 'i-f7-paintbrush-fill',
-                                    slot: 'colors' as const,
+                                    slot: 'appearance' as const,
                                 }
                             ]"
                             :ui="{
-                                trigger: 'bg-neutral-100 rounded-lg px-4 mb-4',
+                                trigger: 'bg-elevated rounded-lg px-4 mb-4',
                                 item: 'border-none',
                                 content: 'pl-4'
                             }"
                         >
-                            <template #tempoAndRhythm>
-                                <UFormField
-                                    label="Beats per minute (BPM)"
-                                    class="flex flex-col gap-1 mb-4"
-                                >
+                            <template #tempoRhythm>
+                                <EditField label="Beats per minute (BPM)">
                                     <BPMInput v-model="metronomes[Number($route.params.metronomeId)]!.configuration.bpm" />
-                                </UFormField>
-                                <UFormField
-                                    label="Time signature"
-                                    class="flex flex-col gap-1 mb-4"
-                                >
-                                    <TimeSignatureInput v-model="metronomes[Number($route.params.metronomeId)]!.configuration.timeSignature" />
-                                </UFormField>
+                                </EditField>
+                                <!-- Custom fields for this metronome type: -->
+                                <Metronome
+                                    v-model="metronomes[Number($route.params.metronomeId)]"
+                                    show-settings-section-only="tempo-rhythm"
+                                />
                             </template>
-                            <template #colors>
-                                <UFormField
-                                    label="Display text"
-                                    class="flex flex-col gap-1 mb-4"
-                                >
+                            <template #appearance>
+                                <EditField label="Display text">
                                     <UInput
                                         v-model="metronomes[Number($route.params.metronomeId)]!.configuration.title"
                                         placeholder="Display Text"
@@ -103,13 +99,12 @@ const activeSections = ref(['0', '1']);
                                         class="w-full"
                                         autocomplete="off"
                                     />
-                                </UFormField>
-                                <UFormField
-                                    label="Color"
-                                    class="flex flex-col gap-1"
-                                >
-                                    <ColorInput v-model="metronomes[Number($route.params.metronomeId)]!.configuration.style.colorBackground" />
-                                </UFormField>
+                                </EditField>
+                                <!-- Custom fields for this metronome type: -->
+                                <Metronome
+                                    v-model="metronomes[Number($route.params.metronomeId)]"
+                                    show-settings-section-only="appearance"
+                                />
                             </template>
                         </UAccordion>
                     </div>
@@ -118,25 +113,3 @@ const activeSections = ref(['0', '1']);
         </UModal>
     </div>
 </template>
-
-<style lang="css" scoped>
-.bg-grid-pattern {
-  background-size: 20px 20px;
-  background-position: 10px 10px;
-  background-image:
-    linear-gradient(to right, rgba(0,0,0,.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0,0,0,.03) 1px, transparent 1px);
-}
-</style>
-
-<style lang="css">
-.bg-shadow-big-blur {
-    filter:
-        drop-shadow(0 0  50px #fff)
-        drop-shadow(0 0  50px #fff)
-        drop-shadow(0 0  20px #fff)
-        drop-shadow(0 0  20px #fff)
-        drop-shadow(0 0  10px #fff)
-        drop-shadow(0 0  10px #fff);
-}
-</style>
