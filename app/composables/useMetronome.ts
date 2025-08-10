@@ -1,7 +1,10 @@
 import { createEventHook } from "@vueuse/core";
 import type { Metronome } from "~/types";
 
- 
+/**
+ * useMetronome() handles the metronome ticking logic. It schedules ticks based
+ * on the BPM configuration of the provided Metronome instance.
+ */
 export const useMetronome = (metronome: MaybeRefOrGetter<Metronome>) => {
     const enabled = ref(false);
     const firstTick = ref<DOMHighResTimeStamp>(performance.now());
@@ -23,18 +26,18 @@ export const useMetronome = (metronome: MaybeRefOrGetter<Metronome>) => {
         pendingFutureTick.value = setTimeout(doTick, milliseconds);
     };
 
-    const millisecondsBetweenTicks = computed(() => (60 / toValue(metronome).configuration.bpm) * 1000);
+    const millisecondsPerBeat = computed(() => (60 / toValue(metronome).configuration.bpm) * 1000);
 
     const doTick = () => {
         enabled.value = true;
         triggerTick();
 
         const elapsedMs = performance.now() - firstTick.value;
-        const driftCorrectionMs = elapsedMs % millisecondsBetweenTicks.value;
+        const driftCorrectionMs = elapsedMs % millisecondsPerBeat.value;
 
         const nextScheduledTick = driftCorrectionMs > 100 ?
-            (millisecondsBetweenTicks.value - driftCorrectionMs) + millisecondsBetweenTicks.value :
-            millisecondsBetweenTicks.value - driftCorrectionMs;
+            (millisecondsPerBeat.value - driftCorrectionMs) + millisecondsPerBeat.value :
+            millisecondsPerBeat.value - driftCorrectionMs;
 
         scheduleTick(nextScheduledTick);
     };
@@ -42,6 +45,6 @@ export const useMetronome = (metronome: MaybeRefOrGetter<Metronome>) => {
     return {
         onTick,
         enabled,
-        millisecondsBetweenTicks,
+        millisecondsPerBeat,
     };
 };

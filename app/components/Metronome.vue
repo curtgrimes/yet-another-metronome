@@ -20,22 +20,24 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <MetronomeRectangle
-        v-if="metronome?.configuration.style.id === 'rectangle'"
-        v-model="metronome"
-        :show-controls
-        :show-settings-section-only
-    />
-    <div
-        v-else
-        class="flex flex-col items-center justify-center gap-2 text-lg bg-gray-300/3 rounded-3xl mx-20 my-4 h-full w-full opacity-50 shadow-[0_0_50px_-5px_inset_#0001] max-w-3xl graph-paper"
-    >
-        <UIcon
-            name="i-mingcute-alert-line"
-            class="text-3xl"
+    <ClientOnly>
+        <MetronomeRectangle
+            v-if="metronome?.configuration.style.id === 'rectangle'"
+            v-model="metronome"
+            :show-controls
+            :show-settings-section-only
         />
-        Cannot display metronome
-    </div>
+        <div
+            v-else
+            class="flex flex-col items-center justify-center gap-2 text-lg bg-gray-300/3 rounded-3xl mx-20 my-4 h-full w-full opacity-50 shadow-[0_0_50px_-5px_inset_#0001] max-w-3xl graph-paper"
+        >
+            <UIcon
+                name="i-mingcute-alert-line"
+                class="text-3xl"
+            />
+            Cannot display metronome
+        </div>
+    </ClientOnly>
 </template>
 
 <style lang="css" scoped>

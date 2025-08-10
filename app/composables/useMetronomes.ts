@@ -25,6 +25,7 @@ export const useMetronomes = createGlobalState(() => {
             },
             state: {
                 paused: false,
+                playbackRate: 1,
                 visibleInMainView: true,
             },
         },

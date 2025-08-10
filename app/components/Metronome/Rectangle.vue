@@ -3,6 +3,17 @@ import type { Metronome, MetronomeStyleRectangle } from '~/types';
 
 const metronome = defineModel<Metronome<MetronomeStyleRectangle>>({ required: true });
 
+/**
+ * The current animation progress as a number between 0 and 1.
+ */
+const currentAnimationProgress = defineModel<number>('current-animation-progress', { default: 0 });
+
+
+/**
+ * Whether or not this metronome is playing and not paused.
+ */
+const playStateVModel = defineModel<AnimationPlayState>('playState', { default: 'running' });
+
 const {
     showControls = true,
     showSettingsSectionOnly = undefined,
@@ -11,7 +22,7 @@ const {
     showSettingsSectionOnly?: 'tempo-rhythm' | 'appearance';
 }>();
 
-const { onTick, enabled, millisecondsBetweenTicks } = useMetronome(metronome);
+const { onTick, enabled, millisecondsPerBeat } = useMetronome(metronome);
 
 const TICK_LENGTH_MS = 100;
 const ticking = ref(false);
@@ -36,6 +47,149 @@ const lighten = (hex: string, percent: number) => {
 };
 
 const colorBackground = computed(() => metronome.value.configuration.style.colorBackground);
+
+// #region Animations
+
+const flashingEffectEl = useTemplateRef<HTMLDivElement>('flashingEffectEl');
+const sideToSideEffectParentEl = useTemplateRef<HTMLDivElement>('sideToSideEffectParentEl');
+const sideToSideEffectEl = useTemplateRef<HTMLDivElement>('sideToSideEffectEl');
+
+const tickingBg = 'var(--ticking-background-color)';
+const notTickingBg = 'var(--not-ticking-background-color)';
+const tickingShadow = `
+  0 0 0 5px inset var(--ticking-border-color),
+  0 0 0 10px inset var(--not-ticking-background-color)
+`;
+const noShadow = 'none';
+
+const {
+    play,
+    pause,
+    finish,
+    currentTime,
+    animates,
+    playbackRate,
+    playState,
+} = useAnimateGroup(
+    [
+        // All these keyframes are TWO beats long.
+
+        // Flashing effect
+        [
+            flashingEffectEl,
+            [
+                { offset: 0,    backgroundColor: tickingBg,    boxShadow: tickingShadow, color: notTickingBg },
+                { offset: 0.1,  backgroundColor: notTickingBg, boxShadow: tickingShadow, color: tickingBg },
+                { offset: 0.3,  backgroundColor: notTickingBg, boxShadow: noShadow, color: tickingBg },
+                { offset: 0.49999999, backgroundColor: notTickingBg, boxShadow: noShadow, color: tickingBg },
+                { offset: 0.5,  backgroundColor: tickingBg,    boxShadow: tickingShadow, color: notTickingBg },
+                { offset: 0.6,  backgroundColor: notTickingBg, boxShadow: tickingShadow, color: tickingBg },
+                { offset: 0.8,  backgroundColor: notTickingBg, boxShadow: noShadow, color: tickingBg },
+                { offset: 1,    backgroundColor: notTickingBg, boxShadow: noShadow, color: tickingBg },
+            ],
+        ],
+
+        // Side-to-side parent
+        [
+            sideToSideEffectParentEl,
+            [
+                { transform: 'translateX(0%)',   offset: 0 },
+                { transform: 'translateX(0%)',   offset: 0.03 },
+                { transform: 'translateX(100%)', offset: 0.5 },
+                { transform: 'translateX(100%)', offset: 0.53 },
+                { transform: 'translateX(0%)',   offset: 1 },
+            ],
+        ],
+
+        // Side-to-side child
+        [
+            sideToSideEffectEl,
+            [
+                { transform: 'translateX(0%)',   offset: 0 },
+                { transform: 'translateX(0%)',   offset: 0.03 },
+                { transform: 'translateX(-100%)', offset: 0.5 },
+                { transform: 'translateX(-100%)', offset: 0.53 },
+                { transform: 'translateX(0%)',   offset: 1 },
+            ],
+        ],
+    ],
+    {
+        // immediate: true,
+        iterations: Infinity,
+        // duration gets set via effect.updateTiming()
+    },
+);
+
+
+
+// Start playing immediately. This should not be needed but 
+// I think something is not working correctly with { immediate: true }.
+onMounted(() => {
+    setTimeout(() => {
+        play();
+    }, 0);
+});
+
+
+watch(playStateVModel, (newPlayStateVModel) => {
+    switch(newPlayStateVModel) {
+    case 'running':
+        play();
+        break;
+    case 'paused':
+    case 'idle':
+        pause();
+        break;
+    case 'finished': 
+        finish();
+        break;
+    default:
+        console.warn(`Unknown play state: ${newPlayStateVModel}`);
+    }
+});
+
+watch(playState, newPlayState => {
+    playStateVModel.value = newPlayState;
+}, { immediate:true });
+
+// Handle BPM changes
+watch(() => [animates.value, millisecondsPerBeat.value], () => {
+    animates.value.forEach(animation => 
+        animation?.effect?.updateTiming({
+            // Each animation is 2 beats long, so we multiply the
+            // millisecondsPerBeat by 2
+            duration: millisecondsPerBeat.value * 2,
+        }));
+});
+
+watch(currentTime, (newCurrentTime = 0) => {
+    const timeInMilliseconds = Number(newCurrentTime) || 0;
+    const beatLengthInMilliseconds = millisecondsPerBeat.value;
+    const twoBeatLengthInMilliseconds = beatLengthInMilliseconds * 2;
+    const epsilon = 1e-9;
+
+    // Use a two-beat window. If we're within epsilon of a two-beat boundary, show 1
+    // instead of 0 so dragging the slider fully right keeps 1 and doesn't snap to 0.
+    currentAnimationProgress.value =
+    Math.abs(timeInMilliseconds % twoBeatLengthInMilliseconds) < epsilon && timeInMilliseconds !== 0
+        ? 1
+        : (timeInMilliseconds % twoBeatLengthInMilliseconds) / twoBeatLengthInMilliseconds;
+});
+
+watch(currentAnimationProgress, (newProgress = 0) => {
+    const twoBeats = millisecondsPerBeat.value * 2;
+    const desired = newProgress * twoBeats;
+    const epsilon = 0.25; // ms tolerance; adjust as needed
+
+    const current = Number(currentTime.value ?? 0);
+    if (Math.abs(current - desired) < epsilon) return;
+
+    currentTime.value = desired;
+});
+
+watch(() => metronome.value.state.playbackRate, (newPlaybackRate) => {
+    playbackRate.value = newPlaybackRate;
+});
 </script>
 
 <template>
@@ -45,39 +199,56 @@ const colorBackground = computed(() => metronome.value.configuration.style.color
         :show-controls
         :show-settings-section-only
         :style="{
-            '--side-to-side-duration': `${millisecondsBetweenTicks * 2}ms`,
             '--ticking-background-color': lighten(colorBackground, -20),
             '--ticking-background-color-dark-mode': lighten(colorBackground, 50),
+
             '--ticking-border-color': lighten(colorBackground, -40),
             '--ticking-border-color-dark-mode': lighten(colorBackground, 50),
+
             '--not-ticking-background-color': lighten(colorBackground, 70),
             '--not-ticking-background-color-dark-mode': lighten(colorBackground, -45),
+
             '--text-color': lighten(colorBackground, -30),
             '--text-color-dark-mode': lighten(colorBackground, 50),
         }"
+        class="
+            dark:![--ticking-background-color:var(--ticking-background-color-dark-mode)]
+            dark:![--ticking-border-color:var(--ticking-border-color-dark-mode)]
+            dark:![--not-ticking-background-color:var(--not-ticking-background-color-dark-mode)]
+            dark:![--text-color:var(--text-color-dark-mode)]
+        "
     >
         <template #default>
             <div   
-                v-if="enabled" 
-                :class="['rounded-3xl relative w-full h-full flex items-center justify-center font-bold text-5xl shadow-[0_0_50px_-5px_inset_#0001] overflow-hidden text-[var(--text-color)] dark:text-[var(--text-color-dark-mode)]', metronome.state.paused && '!animate-none !bg-[var(--not-ticking-background-color)]']"
-                data-animate-flash
+                v-if="enabled"
+                ref="flashingEffectEl"
+                :class="['rounded-3xl relative w-full h-full flex items-center justify-center font-bold text-5xl shadow-[0_0_50px_-5px_inset_#0001] overflow-hidden text-[var(--text-color)] dark:text-[var(--text-color-dark-mode)]']"
             >
+                <div class="absolute top-8 left-8 text-xs font-mono rounded text-[var(--ticking-background-color)] bg-elevated/80 p-2">
+                    <!-- Debug tools -->
+                    millisecondsPerBeat: {{ millisecondsPerBeat.toFixed(2) }}<br>
+                    currentTime: {{ Number(currentTime).toFixed(2) }}<br>
+                    currentAnimationProgress: {{ Number(currentAnimationProgress).toFixed(3) }}<br>
+                    playState: {{ playState }}<br>
+                    playbackRate: {{ playbackRate }}<br>
+                    visibleInMainView: {{ metronome.state.visibleInMainView }}<br>
+                </div>
                 <textarea
                     v-model="metronome.configuration.title"
                     :disabled="!showControls"
                     class="w-full mx-20 resize-none text-center field-sizing-content"
                 />
                 <div
-                    ref="side-to-side-effect"
+                    ref="sideToSideEffectParentEl"
                     data-animate-side-to-side-indicator-parent
-                    :class="['absolute will-change-transform inset-0 pointer-events-none', metronome.state.paused && '!animate-none translate-x-1/8']"
+                    :class="['absolute will-change-transform inset-0 pointer-events-none']"
                     :style="{
                         '--width': 'calc(var(--spacing) * 4)'
                     }"
                 >
                     <div
                         data-animate-side-to-side-indicator
-                        :class="['absolute will-change-transform h-full left-0 w-4 bg-[var(--ticking-background-color)] opacity-60', metronome.state.paused && '!animate-none']"
+                        :class="['absolute will-change-transform h-full left-0 w-4 bg-[var(--ticking-background-color)] opacity-60']"
                     />
                 </div>
             </div>
@@ -126,24 +297,7 @@ const colorBackground = computed(() => metronome.value.configuration.style.color
     @apply fill-blue-400;
 }
 
-@keyframes flash {
-  0%, 50% {
-    background-color: var(--ticking-background-color);
-    box-shadow:
-        0 0 0 5px inset var(--ticking-border-color),
-        0 0 0 10px inset var(--not-ticking-background-color);
-  }
-
-  30%, 49%, 80%, 100% {
-    box-shadow: none;
-  }
-
-  10%, 49%, 60%, 100% {
-    background-color: var(--not-ticking-background-color);
-  }
-}
-
-@keyframes side-to-side-parent {
+/* @keyframes side-to-side-parent {
   0%, 3%, 100% {
     transform: translateX(0%);
   }
@@ -159,25 +313,13 @@ const colorBackground = computed(() => metronome.value.configuration.style.color
   50%, 53% {
     transform: translateX(-100%);
   }
-}
+} */
 
-@media (prefers-color-scheme: dark) {
-  [data-animate-flash] {
-    --ticking-background-color: var(--ticking-background-color-dark-mode);
-    --not-ticking-background-color: var(--not-ticking-background-color-dark-mode);
-    --ticking-border-color: var(--ticking-border-color-dark-mode);
-  }
-}
-
-[data-animate-flash] {
-    animation: flash var(--side-to-side-duration) linear infinite;
-}
-
-[data-animate-side-to-side-indicator-parent] {
+/* [data-animate-side-to-side-indicator-parent] {
     animation: side-to-side-parent var(--side-to-side-duration) linear infinite;
-}
+} */
 
-[data-animate-side-to-side-indicator] {
+/* [data-animate-side-to-side-indicator] {
     animation: side-to-side var(--side-to-side-duration) linear infinite;
-}
+} */
 </style>

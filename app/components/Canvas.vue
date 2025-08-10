@@ -3,12 +3,6 @@ import { useMetronomes } from '~/composables/useMetronomes';
 import { Metronome } from '#components';
 
 const { metronomes } = useMetronomes();
-
-const route = useRoute();
-
-watch(() => Number(route.params.metronomeId), (newValue) => {
-    console.log('newValue:',newValue, route.params.metronomeId);
-});
 </script>
 
 <template>

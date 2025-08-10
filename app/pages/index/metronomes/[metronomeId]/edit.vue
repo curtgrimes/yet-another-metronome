@@ -1,7 +1,10 @@
 <script setup lang="ts">
+import type { ContextMenuItem } from '@nuxt/ui';
+
 const router = useRouter();
 const route = useRoute();
 const { metronomes } = useMetronomes();
+
 
 const handleViewTransition = (to: string) => {
     router.push(to);
@@ -16,6 +19,54 @@ onMounted(() => {
 });
 
 const activeSections = ref(['0', '1']);
+
+/**
+ * The current animation progress as a number between 0 and 1.
+ */
+const currentAnimationProgress = ref<number>(0);
+
+const items = computed<ContextMenuItem[]>(() => [
+    {
+        label: 'Play',
+        icon: 'i-material-symbols-play-arrow-rounded',
+        disabled: playState.value === 'running',
+        onSelect() {
+            playState.value = 'running';
+        },
+    },
+    {
+        label: 'Pause',
+        icon: 'i-material-symbols-pause-rounded',
+        disabled: playState.value !== 'running',
+        onSelect() {
+            playState.value = 'paused';
+        },
+    },
+    {
+        type: 'separator',
+    },
+    {
+        label: 'Slow',
+        type: 'checkbox',
+        icon: 'fluent:slow-mode-20-regular',
+        checked: metronomes.value[Number(route.params.metronomeId)]!.state.playbackRate < 1,
+        onSelect() {
+            if (metronomes.value[Number(route.params.metronomeId)]!.state.playbackRate < 1) {
+                metronomes.value[Number(route.params.metronomeId)]!.state.playbackRate = 1;
+            } else {
+                metronomes.value[Number(route.params.metronomeId)]!.state.playbackRate = 0.3;
+
+                // Start playing (if not already)
+                playState.value = 'running';
+            }
+        },
+    },
+]);
+
+const playState = ref<AnimationPlayState>();
+
+const playStateAtStartOfSeek = ref<AnimationPlayState>();
+
 </script>
 
 <template>
@@ -34,29 +85,82 @@ const activeSections = ref(['0', '1']);
                 <div class="flex h-[90vh]">
                     <div 
                         :style="{  '--grid-pattern': 
-                            `linear-gradient(to right, var(--ui-bg-elevated) 1px, transparent 1px),
-                            linear-gradient(to bottom, var(--ui-bg-elevated) 1px, transparent 1px)`
+                            `linear-gradient(to right, var(--ui-bg-muted) 1px, transparent 1px),
+                            linear-gradient(to bottom, var(--ui-bg-muted) 1px, transparent 1px)`
                         }"
                         class="flex items-center w-full justify-center px-8 pt-18 pb-2 gap-4 flex-col bg-[length:20px_20px] bg-[position:10px_10px] bg-[image:var(--grid-pattern)] border-r border-default/50 shadow-2xl/5"
                     >
                         <Metronome
                             v-if="!metronomes[Number($route.params.metronomeId)]?.state.visibleInMainView"
                             v-model="metronomes[Number($route.params.metronomeId)]"
+                            v-model:current-animation-progress="currentAnimationProgress"
+                            v-model:play-state="playState"
                             :show-controls="false"
                             @before-unmount="metronomes[Number($route.params.metronomeId)]!.state.visibleInMainView = true"
                         />
-                        <UButton
-                            :icon="metronomes[Number($route.params.metronomeId)]!.state.paused
-                                ? 'material-symbols:play-arrow-rounded'
-                                : 'material-symbols:pause-rounded'"
-                            size="xl"
-                            variant="subtle"
-                            color="neutral"
-                            class="rounded-full"
-                            @click="
-                                metronomes[Number($route.params.metronomeId)]!.state.paused = !metronomes[Number($route.params.metronomeId)]!.state.paused
-                            "
-                        />
+                        <div class="flex items-center gap-4">
+                            <UContextMenu
+                                :items="items"
+                                :ui="{ item: 'disabled:cursor-default disabled:!opacity-30'}"
+                            >
+                                <UButton
+                                    :key="playState"
+                                    :icon="
+                                        playState === 'running'
+                                            ? 'i-material-symbols-pause-rounded'
+                                            : 'i-material-symbols-play-arrow-rounded'
+                                    "
+                                    size="xl"
+                                    variant="subtle"
+                                    color="neutral"
+                                    class="rounded-full"
+                                    @click="
+                                        playState = (playState === 'running') ? 'paused' : 'running';
+                                    "
+                                />
+                            </UContextMenu>
+                            <UButton
+                                v-if="metronomes[Number(route.params.metronomeId)]!.state.playbackRate < 1"
+                                variant="subtle"
+                                color="warning"
+                                class="group"
+                                @click="metronomes[Number(route.params.metronomeId)]!.state.playbackRate = 1"
+                            >
+                                <UIcon
+                                    name="fluent:slow-mode-20-regular"
+                                    class="text-xl group-hover:hidden"
+                                /> 
+                                <UIcon
+                                    name="material-symbols:close-rounded"
+                                    class="text-xl hidden group-hover:block"
+                                /> Slow
+                            </UButton>
+                            <div
+                                class="bg-(--ui-bg) px-2.5 py-3 rounded-full border border-[var(--ui-bg-accented)]"
+                            >
+                                <USlider
+                                    v-model="currentAnimationProgress"
+                                    :min="0"
+                                    :max="1"
+                                    size="sm"
+                                    :step="0.001"
+                                    class="w-40"
+                                    @update:model-value="
+                                        if (!playStateAtStartOfSeek) {
+                                            playStateAtStartOfSeek = playState;
+                                        }
+                                        playState = 'paused'
+                                    "
+                                    @click="
+                                        if (playStateAtStartOfSeek) {
+                                            playState = playStateAtStartOfSeek;
+
+                                        }
+                                        playStateAtStartOfSeek = undefined;
+                                    "
+                                />
+                            </div>
+                        </div>
                     </div>
                     <div class="p-8 pt-16 w-sm shrink-0 flex flex-col gap-4 overflow-y-auto">
                         <UAccordion

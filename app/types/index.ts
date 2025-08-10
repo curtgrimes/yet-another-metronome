@@ -18,6 +18,7 @@ export interface MetronomeConfiguration<TStyle extends MetronomeStyle = Metronom
 interface MetronomeState {
   paused: boolean;
   visibleInMainView: boolean;
+  playbackRate: number;
 }
 
 export interface Metronome<TStyle extends MetronomeStyle = MetronomeStyle> {
