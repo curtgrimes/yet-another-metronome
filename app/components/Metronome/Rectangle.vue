@@ -12,7 +12,7 @@ const currentAnimationProgress = defineModel<number>('current-animation-progress
 /**
  * Whether or not this metronome is playing and not paused.
  */
-const playStateVModel = defineModel<AnimationPlayState>('playState', { default: 'running' });
+const playStateVModel = defineModel<AnimationPlayState>('playState', { default: 'idle' });
 
 const {
     showControls = true,
@@ -32,23 +32,35 @@ onTick(() => {
     setTimeout(() => ticking.value = false, TICK_LENGTH_MS);
 });
 
-const lighten = (hex: string, percent: number) => {
+const lighten = (hex: string, percent: number, maximumBrightness = 1) => {
     const num = parseInt(hex.replace('#', ''), 16);
     const amt = Math.round(2.55 * percent);
-    const r = (num >> 16) + amt;
-    const g = (num >> 8 & 0x00FF) + amt;
-    const b = (num & 0x0000FF) + amt;
-    return '#' + (
-        0x1000000 +
-        (r < 255 ? (r < 1 ? 0 : r) : 255) * 0x10000 +
-        (g < 255 ? (g < 1 ? 0 : g) : 255) * 0x100 +
-        (b < 255 ? (b < 1 ? 0 : b) : 255)
-    ).toString(16).slice(1);
+    let r = (num >> 16) + amt;
+    let g = (num >> 8 & 0x00FF) + amt;
+    let b = (num & 0x0000FF) + amt;
+
+    // Clamp values to [0,255]
+    r = Math.max(0, Math.min(255, r));
+    g = Math.max(0, Math.min(255, g));
+    b = Math.max(0, Math.min(255, b));
+
+    // Enforce maximum brightness if specified
+    if (maximumBrightness < 1) {
+        // Calculate perceived brightness (0-1)
+        const brightness = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+        if (brightness > maximumBrightness) {
+            // Scale down RGB to match maximumBrightness
+            const scale = maximumBrightness / brightness;
+            r = Math.round(r * scale);
+            g = Math.round(g * scale);
+            b = Math.round(b * scale);
+        }
+    }
+
+    return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
 };
 
 const colorBackground = computed(() => metronome.value.configuration.style.colorBackground);
-
-// #region Animations
 
 const flashingEffectEl = useTemplateRef<HTMLDivElement>('flashingEffectEl');
 const sideToSideEffectParentEl = useTemplateRef<HTMLDivElement>('sideToSideEffectParentEl');
@@ -60,7 +72,10 @@ const tickingShadow = `
   0 0 0 5px inset var(--ticking-border-color),
   0 0 0 10px inset var(--not-ticking-background-color)
 `;
-const noShadow = 'none';
+const noShadow = '0 0 0 2px inset var(--border-color)';
+
+const tickingTextColor = notTickingBg;
+const notTickingTextColor = 'var(--not-ticking-text-color)';
 
 const {
     play,
@@ -78,14 +93,14 @@ const {
         [
             flashingEffectEl,
             [
-                { offset: 0,    backgroundColor: tickingBg,    boxShadow: tickingShadow, color: notTickingBg },
-                { offset: 0.1,  backgroundColor: notTickingBg, boxShadow: tickingShadow, color: tickingBg },
-                { offset: 0.3,  backgroundColor: notTickingBg, boxShadow: noShadow, color: tickingBg },
-                { offset: 0.49999999, backgroundColor: notTickingBg, boxShadow: noShadow, color: tickingBg },
-                { offset: 0.5,  backgroundColor: tickingBg,    boxShadow: tickingShadow, color: notTickingBg },
-                { offset: 0.6,  backgroundColor: notTickingBg, boxShadow: tickingShadow, color: tickingBg },
-                { offset: 0.8,  backgroundColor: notTickingBg, boxShadow: noShadow, color: tickingBg },
-                { offset: 1,    backgroundColor: notTickingBg, boxShadow: noShadow, color: tickingBg },
+                { offset: 0,    backgroundColor: tickingBg,    boxShadow: tickingShadow, color: tickingTextColor },
+                { offset: 0.1,  backgroundColor: notTickingBg, boxShadow: tickingShadow, color: notTickingTextColor },
+                { offset: 0.3,  backgroundColor: notTickingBg, boxShadow: noShadow, color: notTickingTextColor },
+                { offset: 0.49999999, backgroundColor: notTickingBg, boxShadow: noShadow, color: notTickingTextColor },
+                { offset: 0.5,  backgroundColor: tickingBg,    boxShadow: tickingShadow, color: tickingTextColor },
+                { offset: 0.6,  backgroundColor: notTickingBg, boxShadow: tickingShadow, color: notTickingTextColor },
+                { offset: 0.8,  backgroundColor: notTickingBg, boxShadow: noShadow, color: notTickingTextColor },
+                { offset: 1,    backgroundColor: notTickingBg, boxShadow: noShadow, color: notTickingTextColor },
             ],
         ],
 
@@ -114,21 +129,11 @@ const {
         ],
     ],
     {
-        // immediate: true,
+        immediate: true,
         iterations: Infinity,
         // duration gets set via effect.updateTiming()
     },
 );
-
-
-
-// Start playing immediately. This should not be needed but 
-// I think something is not working correctly with { immediate: true }.
-onMounted(() => {
-    setTimeout(() => {
-        play();
-    }, 0);
-});
 
 
 watch(playStateVModel, (newPlayStateVModel) => {
@@ -187,9 +192,12 @@ watch(currentAnimationProgress, (newProgress = 0) => {
     currentTime.value = desired;
 });
 
+
 watch(() => metronome.value.state.playbackRate, (newPlaybackRate) => {
     playbackRate.value = newPlaybackRate;
 });
+
+const { debugMode } = useSettings();
 </script>
 
 <template>
@@ -199,32 +207,39 @@ watch(() => metronome.value.state.playbackRate, (newPlaybackRate) => {
         :show-controls
         :show-settings-section-only
         :style="{
-            '--ticking-background-color': lighten(colorBackground, -20),
-            '--ticking-background-color-dark-mode': lighten(colorBackground, 50),
+            '--ticking-background-color': lighten(colorBackground, -20, 0.5),
+            '--ticking-background-color-dark-mode': lighten(colorBackground, 60),
 
             '--ticking-border-color': lighten(colorBackground, -40),
             '--ticking-border-color-dark-mode': lighten(colorBackground, 50),
 
-            '--not-ticking-background-color': lighten(colorBackground, 70),
-            '--not-ticking-background-color-dark-mode': lighten(colorBackground, -45),
+            '--not-ticking-background-color': lighten(colorBackground, 50),
+            '--not-ticking-background-color-dark-mode': lighten(colorBackground, -45, 0.4),
 
-            '--text-color': lighten(colorBackground, -30),
-            '--text-color-dark-mode': lighten(colorBackground, 50),
+            '--not-ticking-text-color': lighten(colorBackground, -30, 0.4),
+            '--not-ticking-text-color-dark-mode': lighten(colorBackground, 50),
+
+            '--border-color': 'rgba(0,0,0,0.08)',
+            '--border-color-dark-mode': lighten(colorBackground, 20),
         }"
         class="
             dark:![--ticking-background-color:var(--ticking-background-color-dark-mode)]
             dark:![--ticking-border-color:var(--ticking-border-color-dark-mode)]
             dark:![--not-ticking-background-color:var(--not-ticking-background-color-dark-mode)]
-            dark:![--text-color:var(--text-color-dark-mode)]
+            dark:![--border-color:var(--border-color-dark-mode)]
+            dark:![--not-ticking-text-color:var(--not-ticking-text-color-dark-mode)]
         "
     >
         <template #default>
             <div   
                 v-if="enabled"
                 ref="flashingEffectEl"
-                :class="['rounded-3xl relative w-full h-full flex items-center justify-center font-bold text-5xl shadow-[0_0_50px_-5px_inset_#0001] overflow-hidden text-[var(--text-color)] dark:text-[var(--text-color-dark-mode)]']"
+                :class="['rounded-3xl relative w-full h-full flex items-center justify-center font-bold text-5xl shadow-[0_0_50px_-5px_inset_#0001] overflow-hidden']"
             >
-                <div class="absolute top-8 left-8 text-xs font-mono rounded text-[var(--ticking-background-color)] bg-elevated/80 p-2">
+                <div
+                    v-if="debugMode"
+                    class="absolute top-8 left-8 text-xs font-mono rounded text-[var(--ticking-background-color)] bg-elevated/80 p-2"
+                >
                     <!-- Debug tools -->
                     millisecondsPerBeat: {{ millisecondsPerBeat.toFixed(2) }}<br>
                     currentTime: {{ Number(currentTime).toFixed(2) }}<br>
@@ -236,7 +251,23 @@ watch(() => metronome.value.state.playbackRate, (newPlaybackRate) => {
                 <textarea
                     v-model="metronome.configuration.title"
                     :disabled="!showControls"
-                    class="w-full mx-20 resize-none text-center field-sizing-content"
+                    :class="[
+                        `w-full
+                        mx-20
+                        resize-none
+                        text-center
+                        p-4
+                        rounded-xl
+                        field-sizing-content`,
+                        showControls && `focus:outline-4
+                        hover:outline-4
+                        hover:outline-[var(--ticking-background-color)]/30 
+                        focus:outline-[var(--ticking-background-color)]/70 
+                        hover:outline-dashed
+                        focus:outline-dashed
+                        selection:bg-[var(--ticking-background-color)]
+                        selection:text-[var(--not-ticking-background-color)]`
+                    ]"
                 />
                 <div
                     ref="sideToSideEffectParentEl"
@@ -296,30 +327,4 @@ watch(() => metronome.value.state.playbackRate, (newPlaybackRate) => {
 :deep([data-palette-icon] circle:nth-of-type(4)) {
     @apply fill-blue-400;
 }
-
-/* @keyframes side-to-side-parent {
-  0%, 3%, 100% {
-    transform: translateX(0%);
-  }
-  50%, 53% {
-    transform: translateX(100%);
-  }
-}
-
-@keyframes side-to-side {
-  0%, 3%, 100% {
-    transform: translateX(0%);
-  }
-  50%, 53% {
-    transform: translateX(-100%);
-  }
-} */
-
-/* [data-animate-side-to-side-indicator-parent] {
-    animation: side-to-side-parent var(--side-to-side-duration) linear infinite;
-} */
-
-/* [data-animate-side-to-side-indicator] {
-    animation: side-to-side var(--side-to-side-duration) linear infinite;
-} */
 </style>

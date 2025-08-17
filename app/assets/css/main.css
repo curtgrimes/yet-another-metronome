@@ -12,7 +12,7 @@
 }
 
 .dark {
-  --ui-primary:  var(--color-slate-200);
+  --ui-primary:  var(--color-sky-300);
   --ui-bg: var(--color-old-neutral-950);
 }
 

@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import type { Metronome, TimeSignature } from '~/types';
+import type { ContextMenuItem } from '@nuxt/ui';
+import { useKeyModifier } from '@vueuse/core';
+import type { Metronome } from '~/types';
 
 const metronome = defineModel<Metronome>({ required: true });
 
@@ -28,6 +30,51 @@ const handleViewTransition = (to: string) => {
         router.push(to);
     }
 };
+
+// Set the metronome.configuration.title to "<n> BPM"
+watch(() => metronome.value.configuration.bpm, (newBpm, oldBpm) => {
+    const title = metronome.value.configuration.title ?? '';
+    // Only update if title looks like "<n> BPM" or is empty. Otherwise, the user customized it,
+    // so leave it at the user-customized value.
+    const oldTitle = `${oldBpm} BPM`;
+    const newTitle = `${newBpm} BPM`;
+    if (title.toLowerCase() === oldTitle.toLowerCase() || title.trim() === '') {
+        metronome.value.configuration.title = newTitle;
+    }
+}, { immediate: true });
+
+const altPressed = useKeyModifier('Alt');
+
+const { debugMode } = useSettings();
+
+const contextMenuItems = computed<ContextMenuItem>(() => ([
+    {
+        label: 'Edit',
+        icon: 'i-lucide-pencil',
+    },
+    ...(altPressed.value || debugMode.value
+        ? 
+        [
+            {
+                type: 'separator',
+            },
+            {
+                label: 'Debug mode',
+                type: 'checkbox',
+                icon: 'material-symbols:bug-report-outline-rounded',
+                checked: debugMode.value,
+                onSelect: () => {
+                    debugMode.value = !debugMode.value;
+                },
+                onUpdateChecked: (checked: boolean) => {
+                    console.log('Debug mode toggled:', checked);
+                    debugMode.value = checked;
+                },
+            },
+        ]
+        : []
+    ),
+]));
 </script>
 
 <template>
@@ -46,7 +93,13 @@ const handleViewTransition = (to: string) => {
         :class="['w-full h-full max-w-3xl min-h-3xl max-h-[70%] relative group/metronome-base', textClasses]"
         :style="{viewTransitionName: 'metronome-base'}"
     >
-        <slot  />
+        <UContextMenu
+            :items="contextMenuItems"
+        >
+            <div class="w-full h-full">
+                <slot  />
+            </div>
+        </UContextMenu>
 
         <div
             v-if="showControls"

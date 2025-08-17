@@ -35,5 +35,10 @@
     "happy-dom": "^18.0.1",
     "playwright-core": "^1.54.2",
     "vitest": "^3.2.4"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "@vueuse/core@13.6.0": "patches/@vueuse__core@13.6.0.patch"
+    }
   }
 }

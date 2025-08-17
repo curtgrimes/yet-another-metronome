@@ -66,7 +66,6 @@ const items = computed<ContextMenuItem[]>(() => [
 const playState = ref<AnimationPlayState>();
 
 const playStateAtStartOfSeek = ref<AnimationPlayState>();
-
 </script>
 
 <template>
@@ -180,14 +179,16 @@ const playStateAtStartOfSeek = ref<AnimationPlayState>();
                             ]"
                             :ui="{
                                 trigger: 'bg-elevated rounded-lg px-4 mb-4',
-                                item: 'border-none',
+                                item: 'border-none mb-4',
                                 content: 'pl-4'
                             }"
                         >
                             <template #tempoRhythm>
+                                <!-- Fields that are supported by all metronome types: -->
                                 <EditField label="Beats per minute (BPM)">
                                     <BPMInput v-model="metronomes[Number($route.params.metronomeId)]!.configuration.bpm" />
                                 </EditField>
+
                                 <!-- Custom fields for this metronome type: -->
                                 <Metronome
                                     v-model="metronomes[Number($route.params.metronomeId)]"
@@ -195,7 +196,27 @@ const playStateAtStartOfSeek = ref<AnimationPlayState>();
                                 />
                             </template>
                             <template #appearance>
-                                <EditField label="Display text">
+                                <!-- Fields that are supported by all metronome types: -->
+                                <EditField
+                                    :ui="{label: 'w-full'}"
+                                >
+                                    <template #label>
+                                        <div class="flex justify-between items-end">
+                                            <span>Display text</span>
+                                            <UButton
+                                                v-if="metronomes[Number($route.params.metronomeId)]!.configuration.title.toLowerCase() !== `${metronomes[Number($route.params.metronomeId)]!.configuration.bpm} BPM`.toLowerCase()"
+                                                size="xs"
+                                                variant="link"
+                                                color="primary"
+                                                class="p-0 pb-0.5 font-light"
+                                                @click="metronomes[Number($route.params.metronomeId)]!.configuration.title = `${metronomes[Number($route.params.metronomeId)]!.configuration.bpm} BPM`"
+                                            >
+                                                <UIcon
+                                                    name="material-symbols:sync-outline"
+                                                /> Sync with BPM
+                                            </UButton>
+                                        </div>
+                                    </template>
                                     <UInput
                                         v-model="metronomes[Number($route.params.metronomeId)]!.configuration.title"
                                         placeholder="Display Text"
@@ -204,6 +225,7 @@ const playStateAtStartOfSeek = ref<AnimationPlayState>();
                                         autocomplete="off"
                                     />
                                 </EditField>
+
                                 <!-- Custom fields for this metronome type: -->
                                 <Metronome
                                     v-model="metronomes[Number($route.params.metronomeId)]"

@@ -14,7 +14,7 @@ export const useMetronomes = createGlobalState(() => {
     const metronomes = ref<Metronome[]>([
         {
             configuration: {
-                title: 'Yet Another Metronome',
+                title: '',
                 bpm: 60,
                 timeSignature: [4, 4],
                 style: {
@@ -24,7 +24,6 @@ export const useMetronomes = createGlobalState(() => {
                 startAutomatically: false,
             },
             state: {
-                paused: false,
                 playbackRate: 1,
                 visibleInMainView: true,
             },

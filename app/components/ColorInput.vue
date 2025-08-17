@@ -45,9 +45,24 @@ const hslToHexWithNiceSaturatedColors = (hue: number): string => {
 </script>
 
 <template>
-    <div class="p-2 w-50 flex [&_.picker]:!mt-0.5">
+    <div class="p-2 w-50 flex flex-col gap-5 [&_.picker]:!mt-0.5">
         <HueSlider
             :model-value="hexToHue(colorBackground)"
             @update:model-value="($event: number) => colorBackground = hslToHexWithNiceSaturatedColors($event)"
-        /></div>
+        />
+        <div class="-mx-2 bg-elevated rounded-full flex mr-auto">
+            <UButton
+                v-for="[color, colorClass] in [['#000000', 'text-black'], ['#ffffff', 'text-white']]"
+                :key="color"
+                :class="[
+                    'rounded-full',
+                    colorClass
+                ]"
+                size="lg"
+                variant="ghost"
+                icon="ic:baseline-circle"
+                @click="colorBackground = color!"
+            />
+        </div>
+    </div>
 </template>
