@@ -26,6 +26,7 @@ export const useMetronomes = createGlobalState(() => {
             state: {
                 playbackRate: 1,
                 visibleInMainView: true,
+                showBpmSettingHintForBpm: undefined,
             },
         },
     ]);

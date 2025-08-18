@@ -198,6 +198,26 @@ watch(() => metronome.value.state.playbackRate, (newPlaybackRate) => {
 });
 
 const { debugMode } = useSettings();
+
+let onTitleInputTimeout: ReturnType<typeof setTimeout>;
+const onTitleInput = (event: Event)=> {
+    // Check, after a delay, if the title has been changed to a string in the
+    // format ""<n> BPM" but with a different <n> than the current BPM, meaning
+    // the user is trying to set the BPM through changing the title:
+    clearTimeout(onTitleInputTimeout);
+    onTitleInputTimeout = setTimeout(
+        () => {
+            const target = event.target as HTMLTextAreaElement;
+            const title = target.value.trim();
+            const match = title.match(/^(?<bpm>\d+)\s*BPM$/i);
+            const bpm = match?.groups?.bpm ? parseInt(match.groups.bpm, 10) : NaN;
+            if (!isNaN(bpm) && bpm > 0 && bpm !== metronome.value.configuration.bpm) {
+                metronome.value.state.showBpmSettingHintForBpm = bpm;
+            }
+        }, 
+        500,
+    );
+};
 </script>
 
 <template>
@@ -268,6 +288,7 @@ const { debugMode } = useSettings();
                         selection:bg-[var(--ticking-background-color)]
                         selection:text-[var(--not-ticking-background-color)]`
                     ]"
+                    @input="onTitleInput"
                 />
                 <div
                     ref="sideToSideEffectParentEl"
@@ -295,7 +316,9 @@ const { debugMode } = useSettings();
                     class="text-2xl transition-none"
                 />
                 <template #popover>
-                    <ColorInput v-model="metronome.configuration.style.colorBackground" />
+                    <div class="p-2">
+                        <ColorInput v-model="metronome.configuration.style.colorBackground" />
+                    </div>
                 </template>
             </MetronomeQuickSettingButton>
         </template>

@@ -18,9 +18,9 @@ const { tooltip = undefined, popoverProps = {} } = defineProps<{
                 :disabled="popoverOpen"
             >
                 <UButton
-                    v-bind="$attrs"
                     variant="ghost"
                     color="neutral"
+                    v-bind="$attrs"
                     :class="['aspect-square w-10 p-1 rounded-xl hover:bg-default focus-visible:bg-default hover:!text-(--ui-text) focus-visible:!text-(--ui-text)  aria-expanded:!text-(--ui-text) text-xs flex items-center justify-center font-black !text-inherit transition-none', popoverOpen && '!bg-default opacity-100']"
                 >
                     <slot />
