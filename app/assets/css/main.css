@@ -12,8 +12,9 @@
 }
 
 .dark {
-  --ui-primary:  var(--color-sky-300);
-  --ui-bg: var(--color-old-neutral-950);
+  --ui-primary:  var(--color-blue-200);
+  --ui-bg: var(--color-zinc-950);
+  --ui-bg-elevated: var(--color-gray-900);
 }
 
 html, body {

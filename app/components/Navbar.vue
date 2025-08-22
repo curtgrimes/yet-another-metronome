@@ -47,9 +47,10 @@ watch(mode, () => {
         </UTooltip>
         <UCard
             v-if="!minimizeNavbar"
-            variant="soft"
-            class="max-w-4xl mx-auto mt-4 backdrop-blur-2xl"
+            variant="subtle"
+            class="max-w-4xl mx-auto mt-4 backdrop-blur-2xl rounded-full"
             :style="{ viewTransitionName }"
+            :ui="{body: '!p-2'}"
         >
             <div class="flex gap-4">
                 <UPopover mode="hover">
@@ -58,17 +59,17 @@ watch(mode, () => {
                         icon="i-mingcute-add-line"
                         label="Add Metronome"
                         variant="soft"
+                        class="rounded-full"
                     />
 
-                    <template #content>
-                        Hello world
-                    </template>
+                    <template #content/>
                 </UPopover>
                 <UButton
                     size="lg"
                     icon="i-mingcute-layout-3-line"
                     label="Edit Layout"
                     variant="ghost"
+                    class="rounded-full"
                 />
                 <UPopover
                     mode="hover"
@@ -79,6 +80,11 @@ watch(mode, () => {
                         :content="false"
                         :items="editPerformTabItems"
                         class="ml-auto"
+                        :ui="{
+                            indicator: 'rounded-full',
+                            list: 'bg-accented rounded-full',
+                            trigger: 'rounded-full'
+                        }"
                     >
                         <template #default="{ item }">
                             {{ item.label }}

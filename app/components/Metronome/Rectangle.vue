@@ -268,18 +268,28 @@ const onTitleInput = (event: Event)=> {
                     playbackRate: {{ playbackRate }}<br>
                     visibleInMainView: {{ metronome.state.visibleInMainView }}<br>
                 </div>
-                <textarea
-                    v-model="metronome.configuration.title"
-                    :disabled="!showControls"
-                    :class="[
-                        `w-full
+                <UTooltip
+                    text="Edit Text"
+                    :content="{side:'top'}"
+                    arrow
+                    :portal="false"
+                    :delay-duration="0"
+                    :ui="{content: 'bg-elevated'}"
+                >
+                    <textarea
+                        v-model="metronome.configuration.title"
+                        :disabled="!showControls"
+                        :class="[
+                            `w-full
                         mx-20
                         resize-none
                         text-center
-                        p-4
+                        px-4
+                        hover:py-6
+                        focus:py-6
                         rounded-xl
                         field-sizing-content`,
-                        showControls && `focus:outline-4
+                            showControls && `focus:outline-4
                         hover:outline-4
                         hover:outline-[var(--ticking-background-color)]/30 
                         focus:outline-[var(--ticking-background-color)]/70 
@@ -287,9 +297,11 @@ const onTitleInput = (event: Event)=> {
                         focus:outline-dashed
                         selection:bg-[var(--ticking-background-color)]
                         selection:text-[var(--not-ticking-background-color)]`
-                    ]"
-                    @input="onTitleInput"
-                />
+                        ]"
+                        @click="(event) => (event.target as HTMLTextAreaElement).select()"
+                        @input="onTitleInput"
+                    />
+                </UTooltip>
                 <div
                     ref="sideToSideEffectParentEl"
                     data-animate-side-to-side-indicator-parent

@@ -72,11 +72,13 @@ const playStateAtStartOfSeek = ref<AnimationPlayState>();
     <div>
         <UModal
             title="Edit Metronome"
+            description="Edit the metronome"
             default-open
             class="max-w-7xl"
             :ui="{
                 body: 'p-0 sm:p-0',
                 header: 'absolute inset-x-0 border-0 h-16',
+                description: 'hidden'
             }"
             @after:leave="handleViewTransition('/')"
         >
