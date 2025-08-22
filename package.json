@@ -13,19 +13,19 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
-    "@nuxt/eslint": "1.7.1",
+    "@nuxt/eslint": "1.9.0",
     "@nuxt/image": "1.11.0",
-    "@nuxt/ui": "3.3.0",
-    "@vueuse/core": "^13.6.0",
-    "eslint": "^9.32.0",
+    "@nuxt/ui": "3.3.2",
+    "@vueuse/core": "^13.7.0",
+    "eslint": "^9.33.0",
     "nuxt": "^4.0.3",
-    "tailwindcss": "^4.1.11",
+    "tailwindcss": "^4.1.12",
     "typescript": "^5.9.2",
-    "vue": "^3.5.18",
+    "vue": "^3.5.19",
     "vue-color": "^3.3.1",
     "vue-router": "^4.5.1"
   },
-  "packageManager": "pnpm@10.14.0",
+  "packageManager": "pnpm@10.15.0",
   "devDependencies": {
     "@nuxt/test-utils": "^3.19.2",
     "@vitejs/plugin-vue": "^6.0.1",
@@ -33,12 +33,7 @@
     "@vue/test-utils": "^2.4.6",
     "defu": "^6.1.4",
     "happy-dom": "^18.0.1",
-    "playwright-core": "^1.54.2",
+    "playwright-core": "^1.55.0",
     "vitest": "^3.2.4"
-  },
-  "pnpm": {
-    "patchedDependencies": {
-      "@vueuse/core@13.6.0": "patches/@vueuse__core@13.6.0.patch"
-    }
   }
 }

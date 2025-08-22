@@ -5,6 +5,3 @@ onlyBuiltDependencies:
   - sharp
   - unrs-resolver
   - vue-demi
-
-patchedDependencies:
-  '@vueuse/core@13.6.0': patches/@vueuse__core@13.6.0.patch
