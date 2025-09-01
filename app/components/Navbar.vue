@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { TabsItem } from '@nuxt/ui/runtime/components/Tabs.vue.js';
 
+const { addRandomMetronome } = useMetronomes();
+
 const editPerformTabItems = ref<TabsItem[]>([
     {
         label: 'Edit',
@@ -29,7 +31,7 @@ watch(mode, () => {
 </script>
 
 <template>
-    <div class="fixed inset-x-0">
+    <div class="fixed inset-x-0 z-10">
         <UTooltip
             text="Edit"
             :delay-duration="0"
@@ -60,6 +62,7 @@ watch(mode, () => {
                         label="Add Metronome"
                         variant="soft"
                         class="rounded-full"
+                        @click="addRandomMetronome"
                     />
 
                     <template #content/>
@@ -113,7 +116,7 @@ watch(mode, () => {
         </UCard>
     </div>
     <!-- Navbar spacer -->
-    <div :class="['transition-all shrink-0 duration-200', minimizeNavbar ? 'h-0' : 'h-30']" />
+    <div :class="['transition-all shrink-0 duration-200', minimizeNavbar ? 'h-0' : 'h-20']" />
 </template>
 
 <style>

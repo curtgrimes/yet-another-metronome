@@ -275,28 +275,30 @@ const onTitleInput = (event: Event)=> {
                     :portal="false"
                     :delay-duration="0"
                     :ui="{content: 'bg-elevated'}"
+                    disabled
                 >
                     <textarea
                         v-model="metronome.configuration.title"
                         :disabled="!showControls"
-                        :class="[
-                            `w-full
-                        mx-20
-                        resize-none
-                        text-center
-                        px-4
-                        hover:py-6
-                        focus:py-6
-                        rounded-xl
-                        field-sizing-content`,
-                            showControls && `focus:outline-4
-                        hover:outline-4
-                        hover:outline-[var(--ticking-background-color)]/30 
-                        focus:outline-[var(--ticking-background-color)]/70 
-                        hover:outline-dashed
-                        focus:outline-dashed
-                        selection:bg-[var(--ticking-background-color)]
-                        selection:text-[var(--not-ticking-background-color)]`
+                        :class="[/* temporarily disable to make dragging easier */`
+                                pointer-events-none
+                                mx-20
+                                resize-none
+                                text-center
+                                hover:px-4
+                                hover:py-6
+                                focus:py-6
+                                rounded-xl
+                                field-sizing-content
+                            `,
+                                                                                  showControls && `focus:outline-4
+                                hover:outline-4
+                                hover:outline-[var(--ticking-background-color)]/30 
+                                focus:outline-[var(--ticking-background-color)]/70 
+                                hover:outline-dashed
+                                focus:outline-dashed
+                                selection:bg-[var(--ticking-background-color)]
+                                selection:text-[var(--not-ticking-background-color)]`
                         ]"
                         @click="(event) => (event.target as HTMLTextAreaElement).select()"
                         @input="onTitleInput"

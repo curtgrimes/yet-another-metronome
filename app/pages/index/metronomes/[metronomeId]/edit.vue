@@ -85,11 +85,7 @@ const playStateAtStartOfSeek = ref<AnimationPlayState>();
             <template #body>
                 <div class="flex h-[90vh]">
                     <div 
-                        :style="{  '--grid-pattern': 
-                            `linear-gradient(to right, var(--ui-bg-muted) 1px, transparent 1px),
-                            linear-gradient(to bottom, var(--ui-bg-muted) 1px, transparent 1px)`
-                        }"
-                        class="flex items-center w-full justify-center px-8 pt-18 pb-2 gap-4 flex-col bg-[length:20px_20px] bg-[position:10px_10px] bg-[image:var(--grid-pattern)] border-r border-default/50 shadow-2xl/5"
+                        class="flex items-center w-full justify-center px-8 pt-18 pb-2 gap-4 flex-col bg-grid border-r border-default/50 shadow-2xl/5"
                     >
                         <Metronome
                             v-if="!metronomes[Number($route.params.metronomeId)]?.state.visibleInMainView"
@@ -220,7 +216,7 @@ const playStateAtStartOfSeek = ref<AnimationPlayState>();
                                         </div>
                                     </template>
                                     <UInput
-                                        v-model="metronomes[Number($route.params.metronomeId)]!.configuration.title"
+                                        v-model.trim="metronomes[Number($route.params.metronomeId)]!.configuration.title"
                                         placeholder="Display Text"
                                         type="text"
                                         class="w-full"

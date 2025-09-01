@@ -90,7 +90,7 @@ const contextMenuItems = computed<ContextMenuItem>(() => ([
     </div>
     <div
         v-else
-        :class="['w-full h-full max-w-3xl min-h-3xl max-h-[70%] relative group/metronome-base', textClasses]"
+        :class="['w-full h-full relative group/metronome-base', textClasses]"
         :style="{viewTransitionName: 'metronome-base'}"
     >
         <UContextMenu

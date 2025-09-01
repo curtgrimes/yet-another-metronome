@@ -8,13 +8,25 @@
 
 :root {
   --ui-primary:  var(--color-blue-700);
+}
 
+@utility bg-grid {
+  --bg-grid-color: var(--ui-bg-accented);
+  background-size: --spacing(7) --spacing(7);
+  background-position: 10px 10px;
+  background-image:
+    linear-gradient(to right, var(--bg-grid-color) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--bg-grid-color) 1px, transparent 1px);
 }
 
 .dark {
   --ui-primary:  var(--color-blue-200);
   --ui-bg: var(--color-zinc-950);
   --ui-bg-elevated: var(--color-gray-900);
+
+  .bg-grid {
+    --bg-grid-color: var(--ui-bg-muted);
+  }
 }
 
 html, body {
