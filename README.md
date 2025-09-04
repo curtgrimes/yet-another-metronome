@@ -2,6 +2,8 @@
 
 Yet another metronome. ⚠️ Work in progress.
 
+![Demo](docs/demo.gif)
+
 ## Development
 
 This is a [Nuxt](https://nuxt.com/) project. To run locally:
