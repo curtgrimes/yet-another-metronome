@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ContextMenuItem } from '@nuxt/ui';
-import { useKeyModifier } from '@vueuse/core';
+import { useElementVisibility, useKeyModifier } from '@vueuse/core';
 import type { Metronome } from '~/types';
 
 const metronome = defineModel<Metronome>({ required: true });
@@ -75,6 +75,14 @@ const contextMenuItems = computed<ContextMenuItem>(() => ([
         : []
     ),
 ]));
+
+const metronomeBase = useTemplateRef<HTMLElement | null>('metronome-base');
+const quickSettingButtonsOverflowObserver = useTemplateRef<HTMLElement | null>('quick-setting-buttons-overflow-observer');
+const buttonsNotOverflowing = useElementVisibility(quickSettingButtonsOverflowObserver, {
+    rootMargin: '-10px 0px -10px 0px',
+    scrollTarget: metronomeBase,
+});
+const buttonsOverflowing = computed(() => !buttonsNotOverflowing.value);
 </script>
 
 <template>
@@ -90,6 +98,7 @@ const contextMenuItems = computed<ContextMenuItem>(() => ([
     </div>
     <div
         v-else
+        ref="metronome-base"
         :class="['w-full h-full relative group/metronome-base', textClasses]"
         :style="{viewTransitionName: 'metronome-base'}"
     >
@@ -104,56 +113,59 @@ const contextMenuItems = computed<ContextMenuItem>(() => ([
         <div
             v-if="showControls"
             data-quick-setting-buttons-container
-            class="absolute top-0 py-3 right-3 bottom-0 overflow-y-auto flex flex-col items-end opacity-50 group-hover/metronome-base:opacity-100 has-focus-within:opacity-100 group-hover/metronome-base:grayscale-0 has-[[aria-expanded='true']]:opacity-100 grayscale-100 has-[[aria-expanded='true']]:grayscale-0 gap-0.5 has-focus-within:grayscale-0 z-10"
+            class="absolute top-0 py-4 right-4 bottom-0 overflow-y-auto flex flex-col items-end opacity-50 group-hover/metronome-base:opacity-100 has-focus-within:opacity-100 group-hover/metronome-base:grayscale-0 has-[[aria-expanded='true']]:opacity-100 grayscale-100 has-[[aria-expanded='true']]:grayscale-0 gap-0.5 has-focus-within:grayscale-0 z-10"
         >
-            <UPopover
-                :open="
-                    metronome.state.showBpmSettingHintForBpm !== undefined
-                        && metronome.configuration.bpm !== metronome.state.showBpmSettingHintForBpm
-                "
-                arrow
-                :dismissible="false"
-                :content="{ side: 'left' }"
-                :ui="{content: 'bg-elevated'}"
-            >
-                <MetronomeQuickSettingButton
-                    tooltip="Change tempo"
-                    color="primary"
-                    :class="metronome.state.showBpmSettingHintForBpm !== undefined && 'bg-default border-primary'"
+            <template v-if="buttonsNotOverflowing">
+                <UPopover
+                    :open="
+                        metronome.state.showBpmSettingHintForBpm !== undefined
+                            && metronome.configuration.bpm !== metronome.state.showBpmSettingHintForBpm
+                    "
+                    arrow
+                    :dismissible="false"
+                    :content="{ side: 'left' }"
+                    :ui="{content: 'bg-elevated'}"
                 >
-                    <div class="flex flex-col">
-                        {{ metronome.configuration.bpm }}
-                        <span class="font-normal text-[9px]">BPM</span>
-                    </div>
-                    <template #popover>
-                        <BPMInput v-model="metronome.configuration.bpm" />
-                    </template>
-                </MetronomeQuickSettingButton>
+                    <MetronomeQuickSettingButton
+                        tooltip="Change tempo"
+                        color="primary"
+                        :class="metronome.state.showBpmSettingHintForBpm !== undefined && 'bg-default border-primary'"
+                        class="rounded-tr-6xl"
+                    >
+                        <div class="flex flex-col">
+                            {{ metronome.configuration.bpm }}
+                            <span class="font-normal text-[9px]">BPM</span>
+                        </div>
+                        <template #popover>
+                            <BPMInput v-model="metronome.configuration.bpm" />
+                        </template>
+                    </MetronomeQuickSettingButton>
 
-                <template #content>
-                    <div class="p-2 text-sm">
-                        <UButton
-                            icon="material-symbols:close-rounded"
-                            variant="link"
-                            color="neutral"
-                            size="sm"
-                            class="float-right"
-                            @click="metronome.state.showBpmSettingHintForBpm = undefined"
-                        />
-                        <p>You can change the tempo here.</p>
-                        <UButton
-                            variant="soft"
-                            @click="
-                                if (metronome.state.showBpmSettingHintForBpm) {
-                                    metronome.configuration.bpm = metronome.state.showBpmSettingHintForBpm;
-                                    metronome.state.showBpmSettingHintForBpm = undefined;
-                                }
-                            "
-                        >Change to {{ metronome.state.showBpmSettingHintForBpm }} BPM</UButton>
-                    </div>
-                </template>
-            </UPopover>
-            <slot name="floating-settings" />
+                    <template #content>
+                        <div class="p-2 text-sm">
+                            <UButton
+                                icon="material-symbols:close-rounded"
+                                variant="link"
+                                color="neutral"
+                                size="sm"
+                                class="float-right"
+                                @click="metronome.state.showBpmSettingHintForBpm = undefined"
+                            />
+                            <p>You can change the tempo here.</p>
+                            <UButton
+                                variant="soft"
+                                @click="
+                                    if (metronome.state.showBpmSettingHintForBpm) {
+                                        metronome.configuration.bpm = metronome.state.showBpmSettingHintForBpm;
+                                        metronome.state.showBpmSettingHintForBpm = undefined;
+                                    }
+                                "
+                            >Change to {{ metronome.state.showBpmSettingHintForBpm }} BPM</UButton>
+                        </div>
+                    </template>
+                </UPopover>
+                <slot name="floating-settings" />
+            </template>
             <NuxtLink
                 to="/metronomes/0/edit"
                 @click.prevent="handleViewTransition('/metronomes/0/edit')"
@@ -169,6 +181,11 @@ const contextMenuItems = computed<ContextMenuItem>(() => ([
                     />
                 </MetronomeQuickSettingButton>
             </NuxtLink>
+            <div
+                v-if="buttonsOverflowing"
+                class="h-80"
+            />
+            <div ref="quick-setting-buttons-overflow-observer" />
         </div>
     </div>
 </template>

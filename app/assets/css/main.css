@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
+@plugin "tailwind-clamp";
 
 @theme {
     --font-sans: "Rubik", "Helvetica", "Arial", "sans-serif"; 

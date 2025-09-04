@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { useElementVisibility } from '@vueuse/core';
 import type { Metronome, MetronomeStyleRectangle } from '~/types';
+import { twMerge } from 'tailwind-merge';
 
 const metronome = defineModel<Metronome<MetronomeStyleRectangle>>({ required: true });
 
@@ -218,6 +220,14 @@ const onTitleInput = (event: Event)=> {
         500,
     );
 };
+
+const textOverflowObserver = useTemplateRef<HTMLElement>('text-overflow-observer');
+
+const textNotOverflowing = useElementVisibility(textOverflowObserver, {
+    rootMargin: '-10px 0px -10px 0px',
+    scrollTarget: flashingEffectEl,
+});
+const textOverflowing = computed(() => !textNotOverflowing.value);
 </script>
 
 <template>
@@ -243,24 +253,26 @@ const onTitleInput = (event: Event)=> {
             '--border-color-dark-mode': lighten(colorBackground, 20),
         }"
         class="
-            dark:![--ticking-background-color:var(--ticking-background-color-dark-mode)]
+            metronome-base dark:![--ticking-background-color:var(--ticking-background-color-dark-mode)]
             dark:![--ticking-border-color:var(--ticking-border-color-dark-mode)]
             dark:![--not-ticking-background-color:var(--not-ticking-background-color-dark-mode)]
             dark:![--border-color:var(--border-color-dark-mode)]
             dark:![--not-ticking-text-color:var(--not-ticking-text-color-dark-mode)]
+            [data-quick-setting-buttons-container]:!bg-[red]
         "
     >
         <template #default>
             <div   
                 v-if="enabled"
                 ref="flashingEffectEl"
-                :class="['rounded-3xl relative w-full h-full flex items-center justify-center font-bold text-5xl shadow-[0_0_50px_-5px_inset_#0001] overflow-hidden']"
+                :class="['[container-type:size] rounded-3xl relative w-full h-full flex items-center justify-center font-bold shadow-[0_0_50px_-5px_inset_#0001] overflow-hidden']"
             >
                 <div
                     v-if="debugMode"
-                    class="absolute top-8 left-8 text-xs font-mono rounded text-[var(--ticking-background-color)] bg-elevated/80 p-2"
+                    class="absolute top-2 left-2 text-[9px] font-mono rounded-2xl text-[var(--ticking-background-color)] bg-elevated/80 px-2 py-1"
                 >
                     <!-- Debug tools -->
+                    textOverflowing: {{ textOverflowing }}<br>
                     millisecondsPerBeat: {{ millisecondsPerBeat.toFixed(2) }}<br>
                     currentTime: {{ Number(currentTime).toFixed(2) }}<br>
                     currentAnimationProgress: {{ Number(currentAnimationProgress).toFixed(3) }}<br>
@@ -277,12 +289,19 @@ const onTitleInput = (event: Event)=> {
                     :ui="{content: 'bg-elevated'}"
                     disabled
                 >
-                    <textarea
-                        v-model="metronome.configuration.title"
-                        :disabled="!showControls"
-                        :class="[/* temporarily disable to make dragging easier */`
+                    <div 
+                        :class="['flex flex-col', textOverflowing ? 'items-start justify-start self-start justify-self-start' : 'items-center justify-center']"
+                    >
+                        <textarea
+                            v-model="metronome.configuration.title"
+                            :disabled="!showControls"
+                            :class="twMerge(`
+                                metronome-title
+                                p-2
+                                clamp-[text,xs,7xl,@1rem,@7xl]
+                                clamp-[ml,0.5,10,@xs,@7xl]
+                                mr-8
                                 pointer-events-none
-                                mx-20
                                 resize-none
                                 text-center
                                 hover:px-4
@@ -291,7 +310,7 @@ const onTitleInput = (event: Event)=> {
                                 rounded-xl
                                 field-sizing-content
                             `,
-                                                                                  showControls && `focus:outline-4
+                                            textOverflowing ? 'text-left font-medium ml-1' : 'text-balance',                                                showControls && `focus:outline-4
                                 hover:outline-4
                                 hover:outline-[var(--ticking-background-color)]/30 
                                 focus:outline-[var(--ticking-background-color)]/70 
@@ -299,10 +318,24 @@ const onTitleInput = (event: Event)=> {
                                 focus:outline-dashed
                                 selection:bg-[var(--ticking-background-color)]
                                 selection:text-[var(--not-ticking-background-color)]`
-                        ]"
-                        @click="(event) => (event.target as HTMLTextAreaElement).select()"
-                        @input="onTitleInput"
-                    />
+                            )"
+                            @click="(event) => (event.target as HTMLTextAreaElement).select()"
+                            @input="onTitleInput"
+                        />
+                        <!-- Add a spacer to prevent a loop where changing to
+                        the more collapsed appearance causes the text to no
+                        longer overflow, therefore causing it to loop and
+                        overflow again. With the spacer that only appears on
+                        overflow, the metronome needs to be resized a bit larger
+                        than what it took to collapse it: -->
+                        <div
+                            v-if="textOverflowing"
+                            class="h-14"
+                        />
+                        <div
+                            ref="text-overflow-observer"
+                        />
+                    </div>
                 </UTooltip>
                 <div
                     ref="sideToSideEffectParentEl"
@@ -345,9 +378,14 @@ const onTitleInput = (event: Event)=> {
     </MetronomeBase>
 </template>
 
-
 <style lang="css" scoped>
 @reference "~/assets/css/main.css";
+
+@container (min-aspect-ratio: 17/1) {
+    .metronome-title {
+        @apply text-5xl ml-2;
+    }
+}
 
 :deep([data-palette-icon] circle:nth-of-type(1)) {
     @apply fill-red-500;

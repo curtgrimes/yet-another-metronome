@@ -166,7 +166,7 @@ watch(grid, (_grid) => {
 @reference "~/assets/css/main.css";
 
 .placeholder-content {
-    @apply !rounded-2xl !bg-accented/90;
+    @apply !rounded-2xl !bg-(--ui-bg) border border-(--ui-bg-accented);
 }
 
 .ui-resizable-handle {
