@@ -5,7 +5,7 @@ router.replace('/');
 </script>
 
 <template>
-    <div>
-        metronomes/index.vue
-    </div>
+  <div>
+    metronomes/index.vue
+  </div>
 </template>

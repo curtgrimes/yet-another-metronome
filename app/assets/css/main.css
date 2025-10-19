@@ -1,14 +1,14 @@
-@import "tailwindcss";
-@import "@nuxt/ui";
+@import 'tailwindcss';
+@import '@nuxt/ui';
 @plugin "tailwind-clamp";
 
 @theme {
-    --font-sans: "Rubik", "Helvetica", "Arial", "sans-serif"; 
-    --font-time-signature: 'Bravura Time Signature Subset';
+  --font-sans: 'Rubik', 'Helvetica', 'Arial', 'sans-serif';
+  --font-time-signature: 'Bravura Time Signature Subset';
 }
 
 :root {
-  --ui-primary:  var(--color-blue-700);
+  --ui-primary: var(--color-blue-700);
 }
 
 @utility bg-grid {
@@ -21,7 +21,7 @@
 }
 
 .dark {
-  --ui-primary:  var(--color-blue-200);
+  --ui-primary: var(--color-blue-200);
   --ui-bg: var(--color-zinc-950);
   --ui-bg-elevated: var(--color-gray-900);
 
@@ -30,11 +30,11 @@
   }
 }
 
-html, body {
+html,
+body {
   @apply h-full;
 }
 
 button {
-    @apply cursor-pointer;
+  @apply cursor-pointer;
 }
-

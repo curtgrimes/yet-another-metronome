@@ -1,28 +1,28 @@
 export interface MetronomeStyleBase {
-  id: MetronomeStyleId;
+  id: MetronomeStyleId
 }
 
 export type MetronomeStyleId = 'rectangle';
 
-export type MetronomeStyle =
-  | MetronomeStyleRectangle;
+export type MetronomeStyle
+  = | MetronomeStyleRectangle;
 
 export interface MetronomeConfiguration<TStyle extends MetronomeStyle = MetronomeStyle> {
-  title: string;
-  bpm: number;
-  timeSignature: TimeSignature;
-  style: TStyle;
-  startAutomatically: boolean;
+  title: string
+  bpm: number
+  timeSignature: TimeSignature
+  style: TStyle
+  startAutomatically: boolean
 }
 
 interface MetronomeState {
-  visibleInMainView: boolean;
-  playbackRate: number;
-  showBpmSettingHintForBpm: number | undefined;
+  visibleInMainView: boolean
+  playbackRate: number
+  showBpmSettingHintForBpm: number | undefined
 }
 
 export interface Metronome<TStyle extends MetronomeStyle = MetronomeStyle> {
-  configuration: MetronomeConfiguration<TStyle>,
+  configuration: MetronomeConfiguration<TStyle>
   state: MetronomeState
 }
 
@@ -37,7 +37,7 @@ export type TimeSignature = [number, number];
 // [beatsPerMeasure, noteValueGettingOneBeat]
 
 export interface MetronomeStyleRectangle extends MetronomeStyleBase {
-  id: 'rectangle';
+  id: 'rectangle'
   // Background color in hex format. Example: "#FFFF00"
-  colorBackground: string;
+  colorBackground: string
 }
