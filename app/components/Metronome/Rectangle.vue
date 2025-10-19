@@ -299,8 +299,8 @@ const textOverflowing = computed(() => !textNotOverflowing.value);
                                 metronome-title
                                 p-2
                                 clamp-[text,xs,7xl,@1rem,@7xl]
-                                clamp-[ml,0.5,10,@xs,@7xl]
-                                mr-8
+                                [word-break:break-word]
+                                clamp-[mx,5,10,@xs,@7xl]
                                 pointer-events-none
                                 resize-none
                                 text-center
@@ -310,7 +310,7 @@ const textOverflowing = computed(() => !textNotOverflowing.value);
                                 rounded-xl
                                 field-sizing-content
                             `,
-                                            textOverflowing ? 'text-left font-medium ml-1' : 'text-balance',                                                showControls && `focus:outline-4
+                                            textOverflowing ? 'text-left ml-1' : 'text-balance',                                                showControls && `focus:outline-4
                                 hover:outline-4
                                 hover:outline-[var(--ticking-background-color)]/30 
                                 focus:outline-[var(--ticking-background-color)]/70 

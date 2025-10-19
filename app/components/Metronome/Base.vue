@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { ContextMenuItem } from '@nuxt/ui';
-import { useElementVisibility, useKeyModifier } from '@vueuse/core';
+import { createReusableTemplate, useElementVisibility, useKeyModifier } from '@vueuse/core';
 import type { Metronome } from '~/types';
+import { twMerge } from 'tailwind-merge';
 
 const metronome = defineModel<Metronome>({ required: true });
 
@@ -46,6 +47,8 @@ watch(() => metronome.value.configuration.bpm, (newBpm, oldBpm) => {
 const altPressed = useKeyModifier('Alt');
 
 const { debugMode } = useSettings();
+
+const [DefineMoreSettingsButton, MoreSettingsButton] = createReusableTemplate<{ tooltip?: string }>();
 
 const contextMenuItems = computed<ContextMenuItem>(() => ([
     {
@@ -99,7 +102,7 @@ const buttonsOverflowing = computed(() => !buttonsNotOverflowing.value);
     <div
         v-else
         ref="metronome-base"
-        :class="['w-full h-full relative group/metronome-base', textClasses]"
+        :class="['[container-type:size] w-full h-full relative group/metronome-base', textClasses]"
         :style="{viewTransitionName: 'metronome-base'}"
     >
         <UContextMenu
@@ -110,12 +113,36 @@ const buttonsOverflowing = computed(() => !buttonsNotOverflowing.value);
             </div>
         </UContextMenu>
 
+        <DefineMoreSettingsButton v-slot="{ tooltip = 'Settings' }">
+            <NuxtLink
+                to="/metronomes/0/edit"
+                @click.prevent="handleViewTransition('/metronomes/0/edit')"
+            >
+                <MetronomeQuickSettingButton
+                    :tooltip
+                >
+                    <UIcon
+                        name="i-mingcute-more-1-fill"
+                        data-palette-icon
+                        mode="svg"
+                        class="text-2xl transition-none"
+                    />
+                </MetronomeQuickSettingButton>
+            </NuxtLink>
+        </DefineMoreSettingsButton>
+
         <div
             v-if="showControls"
             data-quick-setting-buttons-container
-            class="absolute top-0 py-4 right-4 bottom-0 overflow-y-auto flex flex-col items-end opacity-50 group-hover/metronome-base:opacity-100 has-focus-within:opacity-100 group-hover/metronome-base:grayscale-0 has-[[aria-expanded='true']]:opacity-100 grayscale-100 has-[[aria-expanded='true']]:grayscale-0 gap-0.5 has-focus-within:grayscale-0 z-10"
+            :class="twMerge(`absolute inset-y-2 @3xs:inset-y-4 right-4 flex flex-col items-end opacity-50 group-hover/metronome-base:opacity-100 has-focus-within:opacity-100 group-hover/metronome-base:grayscale-0 has-[[aria-expanded='true']]:opacity-100 grayscale-100 has-[[aria-expanded='true']]:grayscale-0 gap-0.5 has-focus-within:grayscale-0 z-10`, buttonsOverflowing && '@3xs:inset-y-2' )"
         >
-            <template v-if="buttonsNotOverflowing">
+            <div
+                :class="twMerge(
+                    'invisible @3xs:visible',
+                    /* Keep it in document flow so we can easily calculate if it is no longer overflowing */
+                    buttonsOverflowing && '@3xs:invisible @3xs:pointer-events-none'
+                )"
+            >
                 <UPopover
                     :open="
                         metronome.state.showBpmSettingHintForBpm !== undefined
@@ -165,27 +192,29 @@ const buttonsOverflowing = computed(() => !buttonsNotOverflowing.value);
                     </template>
                 </UPopover>
                 <slot name="floating-settings" />
-            </template>
-            <NuxtLink
-                to="/metronomes/0/edit"
-                @click.prevent="handleViewTransition('/metronomes/0/edit')"
-            >
-                <MetronomeQuickSettingButton
-                    tooltip="More settings"
-                >
-                    <UIcon
-                        name="i-mingcute-more-1-fill"
-                        data-palette-icon
-                        mode="svg"
-                        class="text-2xl transition-none"
-                    />
-                </MetronomeQuickSettingButton>
-            </NuxtLink>
+                <MoreSettingsButton tooltip="More settings" />
+            </div>
             <div
                 v-if="buttonsOverflowing"
-                class="h-80"
+                class="h-4"
             />
             <div ref="quick-setting-buttons-overflow-observer" />
+            <MoreSettingsButton :class="twMerge('block absolute right-0 bottom-2 more-settings-button-collapsed @3xs:hidden', buttonsOverflowing && '@3xs:block')" />
         </div>
     </div>
 </template>
+
+<style lang="css" scoped>
+@reference "~/assets/css/main.css";
+
+/* Very collapsed appearance when the parent is very small in height: */
+@container (height < 80px) {
+    .more-settings-button-collapsed {
+        @apply inset-y-1 -right-1 z-30;
+
+        & :deep([data-quick-setting-button]) {
+            @apply !py-0 aspect-auto h-full rounded-[calc(var(--ui-radius)*5)] w-14;
+        }
+    }
+}
+</style>

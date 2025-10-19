@@ -169,16 +169,41 @@ watch(grid, (_grid) => {
     @apply !rounded-2xl !bg-(--ui-bg) border border-(--ui-bg-accented);
 }
 
+.grid-stack-item {
+    container-type: size;
+    @apply min-h-12;
+}
+
 .ui-resizable-handle {
     opacity: 0;
     transition: all 250ms ease-out;
-    transform: scale(0.3) !important;
     --resize-handle-offset: 0px;
+    --resize-handle-scale: 1;
+
+    /* Cut out a little "corner notch" so that clickable buttons near the
+    corners can be interacted with instead of having the resize control blocking
+    them. */
+    --notch: 45%;
+}
+
+/* Have a slightly different appearance with smaller controls when the grid item
+approaches a small size: */
+@container (height < 100px) or (width < 200px) {
+    .ui-resizable-handle {
+        --resize-handle-offset: -4px;
+        --resize-handle-scale: 0.5;
+        --notch: 65%;
+    }
+
+    .grid-stack-item:hover .ui-resizable-handle {
+        --resize-handle-offset: -8px !important;
+        --resize-handle-scale: 0.65;
+    }
 }
 
 .grid-stack-item:hover .ui-resizable-handle {
-    opacity: 0.3;
-    --resize-handle-offset: -5px;
+    opacity: 0.5;
+    --resize-handle-offset: -6px;
 }
 
 .ui-resizable-resizing .ui-resizable-handle:not(.ui-resizable-handle:hover) {
@@ -194,34 +219,30 @@ watch(grid, (_grid) => {
     cursor: nesw-resize;
     --gs-item-margin-top: var(--resize-handle-offset);
     --gs-item-margin-right: var(--resize-handle-offset);
-    transform: rotate(-90deg) !important;
+    transform: rotate(-90deg) scale(var(--resize-handle-scale)) !important;
 }
 .ui-resizable-handle.ui-resizable-se {
     cursor: nwse-resize;
     --gs-item-margin-bottom: var(--resize-handle-offset);
     --gs-item-margin-right: var(--resize-handle-offset);
-    transform: rotate(0) !important;
+    transform: rotate(0) scale(var(--resize-handle-scale)) !important;
 }
 .ui-resizable-handle.ui-resizable-sw {
     cursor: nesw-resize;
     --gs-item-margin-bottom: var(--resize-handle-offset);
     --gs-item-margin-left: var(--resize-handle-offset);
-    transform: rotate(90deg) !important;
+    transform: rotate(90deg) scale(var(--resize-handle-scale)) !important;
 }
 .ui-resizable-handle.ui-resizable-nw {
     cursor: nwse-resize;
     --gs-item-margin-top: var(--resize-handle-offset);
     --gs-item-margin-left: var(--resize-handle-offset);
-    transform: rotate(180deg) !important;
+    transform: rotate(180deg) scale(var(--resize-handle-scale)) !important;
 }
 
 .ui-resizable-handle {
     content: '';
 
-    /* Cut out a little "corner notch" so that clickable buttons near the
-    corners can be interacted with instead of having the resize control blocking
-    them. */
-    --notch: 45%;
     clip-path: polygon(
         var(--notch) 0%,    /* top edge, 40% across */
         100% 0%,   /* top-right corner */
@@ -241,7 +262,7 @@ watch(grid, (_grid) => {
       no-repeat 50% 50% / 100% 100%
       url("data:image/svg+xml;utf8,\
 <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' preserveAspectRatio='none'>\
-  <path d='M80,180 A120,120 0 0 0 180,80' fill='none' stroke='%23777' stroke-width='24' stroke-linecap='round'/>\
+  <path d='M80,180 A120,120 0 0 0 180,80' fill='none' stroke='%237779' stroke-width='24' stroke-linecap='round'/>\
 </svg>") !important;
 }
 
@@ -249,7 +270,6 @@ watch(grid, (_grid) => {
     content: '';
     width: 20px;
     height: 20px;
-    background: red;
     position: absolute;
     top: 0;
     left: 0;
