@@ -18,20 +18,20 @@ const editPerformTabItems = ref<TabsItem[]>([
     },
 ]);
 
-const mode = ref<'edit' | 'perform'>('edit');
+const { appMode } = useSettings();
 
 const minimizeNavbar = ref(false);
 const viewTransitionName = ref<'navbar-minimize' | undefined>();
-watch(mode, () => {
+watch(appMode, () => {
     viewTransitionName.value = 'navbar-minimize';
     document.startViewTransition(async () => {
-        minimizeNavbar.value = mode.value === 'perform';
+        minimizeNavbar.value = appMode.value === 'perform';
     }).finished.finally(() => (viewTransitionName.value = undefined));
 });
 </script>
 
 <template>
-    <div class="fixed inset-x-0 z-10">
+    <div class="inset-x-0 z-10">
         <UTooltip
             text="Edit"
             :delay-duration="0"
@@ -42,7 +42,7 @@ watch(mode, () => {
                 size="lg"
                 class="absolute top-4 right-4 aspect-square rounded-full text-xl p-2"
                 variant="soft"
-                @click="mode = 'edit'"
+                @click="appMode = 'edit'"
             >
                 <UIcon name="i-mingcute-settings-7-line" />
             </UButton>
@@ -79,7 +79,7 @@ watch(mode, () => {
                     :dismissible="false"
                 >
                     <UTabs
-                        v-model="mode"
+                        v-model="appMode"
                         :content="false"
                         :items="editPerformTabItems"
                         class="ml-auto"
@@ -115,8 +115,6 @@ watch(mode, () => {
             </div>
         </UCard>
     </div>
-    <!-- Navbar spacer -->
-    <div :class="['transition-all shrink-0 duration-200', minimizeNavbar ? 'h-0' : 'h-20']" />
 </template>
 
 <style>

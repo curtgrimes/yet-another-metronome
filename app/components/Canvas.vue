@@ -7,6 +7,8 @@ import {  useElementBounding, watchArray, whenever } from '@vueuse/core';
 
 const { metronomes } = useMetronomes();
 
+const { appMode } = useSettings();
+
 const metronomeEls = ref<HTMLDivElement[]>();
 
 const gridContainer = useTemplateRef('grid-container');
@@ -59,6 +61,15 @@ whenever(gridContainer, (newGridContainer) => {
     grid.value.on('dragstop resizestop', () => {
         draggingOrResizing.value = false;
     });
+});
+
+watch(appMode, (newAppMode) => {
+    if (newAppMode === 'edit') {
+        grid.value?.enable();
+    }
+    else {
+        grid.value?.disable();
+    }
 });
 
 watch(cellHeight, () => {
@@ -156,7 +167,9 @@ watch(grid, (_grid) => {
             <component
                 :is="metronome.state.visibleInMainView ? Metronome : 'div'"
                 v-model="metronomes[index]"
-                class="cursor-move p-2"
+                class="p-2"
+                :class="appMode === 'edit' && 'cursor-move'"
+                :show-controls="appMode === 'edit'"
             />
         </div>
     </div>
