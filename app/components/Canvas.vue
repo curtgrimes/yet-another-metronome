@@ -108,19 +108,18 @@ watch(grid, (_grid) => {
             h: Math.max(1, Math.floor(ROW_COUNT / 1.5)),
           };
 
-          _grid.makeWidget(_addedMetronomeEl, gridStackPosition);
-
-          // _grid.makeWidget(_addedMetronomeEl, _grid.isAreaEmpty(
-          //   gridStackPosition.x!,
-          //   gridStackPosition.y!,
-          //   gridStackPosition.w!,
-          //   gridStackPosition.h!,
-          // )
-          //   ? gridStackPosition
-          //   : {
-          //       w: 2,
-          //       h: 2,
-          //     });
+          // TODO: This should use saved positions?
+          _grid.makeWidget(_addedMetronomeEl, _grid.isAreaEmpty(
+            gridStackPosition.x!,
+            gridStackPosition.y!,
+            gridStackPosition.w!,
+            gridStackPosition.h!,
+          )
+            ? gridStackPosition
+            : {
+                w: 2,
+                h: 2,
+              });
         });
 
         (removed || []).forEach((_removedMetronomeEL) => {
