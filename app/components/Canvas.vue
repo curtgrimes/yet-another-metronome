@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { GridStackPosition } from 'gridstack';
+import type { GridStackElementHandler, GridStackPosition } from 'gridstack';
 import { Metronome } from '#components';
 import { useElementBounding, watchArray, whenever } from '@vueuse/core';
 import { GridStack } from 'gridstack';
@@ -57,9 +57,15 @@ whenever(gridContainer, (newGridContainer) => {
     draggingOrResizing.value = true;
   });
 
-  grid.value.on('dragstop resizestop', () => {
+  const gridStackDragstopResizestopHandler: GridStackElementHandler = (foo, el) => {
     draggingOrResizing.value = false;
-  });
+    if (el.gridstackNode) {
+      // Persist this metronome's new grid position and size
+      const { w, h, x, y } = el.gridstackNode;
+    }
+  };
+
+  grid.value.on('dragstop resizestop', gridStackDragstopResizestopHandler);
 });
 
 watch(appMode, (newAppMode) => {
@@ -102,17 +108,19 @@ watch(grid, (_grid) => {
             h: Math.max(1, Math.floor(ROW_COUNT / 1.5)),
           };
 
-          _grid.makeWidget(_addedMetronomeEl, _grid.isAreaEmpty(
-            gridStackPosition.x!,
-            gridStackPosition.y!,
-            gridStackPosition.w!,
-            gridStackPosition.h!,
-          )
-            ? gridStackPosition
-            : {
-                w: 2,
-                h: 2,
-              });
+          _grid.makeWidget(_addedMetronomeEl, gridStackPosition);
+
+          // _grid.makeWidget(_addedMetronomeEl, _grid.isAreaEmpty(
+          //   gridStackPosition.x!,
+          //   gridStackPosition.y!,
+          //   gridStackPosition.w!,
+          //   gridStackPosition.h!,
+          // )
+          //   ? gridStackPosition
+          //   : {
+          //       w: 2,
+          //       h: 2,
+          //     });
         });
 
         (removed || []).forEach((_removedMetronomeEL) => {

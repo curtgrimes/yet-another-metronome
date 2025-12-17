@@ -12,7 +12,14 @@ export interface MetronomeConfiguration<TStyle extends MetronomeStyle = Metronom
   bpm: number
   timeSignature: TimeSignature
   style: TStyle
-  startAutomatically: boolean
+  position: {
+    x: number
+    y: number
+  }
+  size: {
+    width: number
+    height: number
+  }
 }
 
 interface MetronomeState {

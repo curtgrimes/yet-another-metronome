@@ -67,13 +67,6 @@ watch(appMode, () => {
 
           <template #content />
         </UPopover>
-        <UButton
-          size="lg"
-          icon="i-mingcute-layout-3-line"
-          label="Edit Layout"
-          variant="ghost"
-          class="rounded-full"
-        />
         <UPopover
           mode="hover"
           :dismissible="false"

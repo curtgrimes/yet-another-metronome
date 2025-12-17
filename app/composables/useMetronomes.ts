@@ -1,17 +1,8 @@
 import type { Metronome } from '~/types';
-// import { useLocalStorage } from '@vueuse/core';
-import { createGlobalState } from '@vueuse/core';
+import { createGlobalState, useLocalStorage } from '@vueuse/core';
 
 export const useMetronomes = createGlobalState(() => {
-  // const metronomes = useLocalStorage<Metronome[]>('metronomes', [
-  //   {
-  //     title: 'Default Metronome',
-  //     bpm: 120,
-  //     style: 'rectangle'
-  //   }
-  // ], { initOnMounted: true });
-
-  const metronomes = ref<Metronome[]>([]);
+  const metronomes = useLocalStorage<Metronome[]>('metronomes', []);
 
   const colors = [
     '#FF0000', // Red
@@ -59,7 +50,6 @@ export const useMetronomes = createGlobalState(() => {
           id: 'rectangle',
           colorBackground: getRandomColor(),
         },
-        startAutomatically: false,
       },
       state: {
         playbackRate: 1,
@@ -69,7 +59,10 @@ export const useMetronomes = createGlobalState(() => {
     });
   };
 
-  addRandomMetronome();
+  if (metronomes.value.length <= 0) {
+    // Add one to start off with
+    addRandomMetronome();
+  }
 
   return {
     metronomes,
