@@ -67,44 +67,52 @@ watch(appMode, () => {
 
           <template #content />
         </UPopover>
-        <UPopover
-          mode="hover"
-          :dismissible="false"
-        >
-          <UTabs
-            v-model="appMode"
-            :content="false"
-            :items="editPerformTabItems"
-            class="ml-auto"
-            :ui="{
-              indicator: 'rounded-full',
-              list: 'bg-accented rounded-full',
-              trigger: 'rounded-full',
-            }"
+        <div class="ml-auto flex gap-2">
+          <UButton
+            icon="i-mingcute-settings-7-line"
+            label="Settings"
+            variant="ghost"
+            class="rounded-full"
+            to="/settings"
+          />
+          <UPopover
+            mode="hover"
+            :dismissible="false"
           >
-            <template #default="{ item }">
-              {{ item.label }}
-            </template>
-          </UTabs>
-          <template #content>
-            <div class="p-4 flex flex-col gap-4 text-sm">
-              <div
-                v-for="(item, index) in editPerformTabItems"
-                :key="index"
-              >
-                <h3 class="font-bold flex items-center gap-2">
-                  <UIcon
-                    :name="item.icon!"
-                    class="w-4"
-                  /> {{ item.label }}
-                </h3>
-                <p class="ml-6">
-                  {{ item.description }}
-                </p>
+            <UTabs
+              v-model="appMode"
+              :content="false"
+              :items="editPerformTabItems"
+              :ui="{
+                indicator: 'rounded-full',
+                list: 'bg-accented rounded-full',
+                trigger: 'rounded-full',
+              }"
+            >
+              <template #default="{ item }">
+                {{ item.label }}
+              </template>
+            </UTabs>
+            <template #content>
+              <div class="p-4 flex flex-col gap-4 text-sm">
+                <div
+                  v-for="(item, index) in editPerformTabItems"
+                  :key="index"
+                >
+                  <h3 class="font-bold flex items-center gap-2">
+                    <UIcon
+                      :name="item.icon!"
+                      class="w-4"
+                    /> {{ item.label }}
+                  </h3>
+                  <p class="ml-6">
+                    {{ item.description }}
+                  </p>
+                </div>
               </div>
-            </div>
-          </template>
-        </UPopover>
+            </template>
+          </UPopover>
+        </div>
       </div>
     </UCard>
   </div>

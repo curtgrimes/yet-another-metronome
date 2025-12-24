@@ -46,7 +46,7 @@ export function useMetronome(metronome: MaybeRefOrGetter<Metronome>) {
 
   return {
     onTick,
-    enabled,
+    enabled: readonly(enabled),
     millisecondsPerBeat,
   };
 }

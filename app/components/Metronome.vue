@@ -12,7 +12,16 @@ const {
 
 const emit = defineEmits<{ beforeUnmount: [] }>();
 
+const { appMode, playMetronomesInEditMode } = useSettings();
+
 const metronome = defineModel<Metronome>();
+
+const playState = ref<InstanceType<typeof MetronomeRectangle>['$props']['playState']>();
+
+// Pause metronomes in edit mode
+watch([appMode, playState, playMetronomesInEditMode], ([newAppMode]) => {
+  playState.value = (newAppMode === 'edit' && !playMetronomesInEditMode.value) ? 'paused' : 'running';
+});
 
 onBeforeUnmount(() => {
   emit('beforeUnmount');
@@ -24,6 +33,7 @@ onBeforeUnmount(() => {
     <MetronomeRectangle
       v-if="metronome?.configuration.style.id === 'rectangle'"
       v-model="metronome"
+      v-model:play-state="playState"
       :show-controls
       :show-settings-section-only
     />

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Metronome, MetronomeStyleRectangle } from '~/types';
-import { useElementVisibility } from '@vueuse/core';
+import { syncRef, useElementVisibility } from '@vueuse/core';
 import { twMerge } from 'tailwind-merge';
 
 const {
@@ -78,6 +78,8 @@ const noShadow = '0 0 0 2px inset var(--border-color)';
 const tickingTextColor = notTickingBg;
 const notTickingTextColor = 'var(--not-ticking-text-color)';
 
+const PAUSED_OFFSET = 0.3;
+
 const {
   play,
   pause,
@@ -96,7 +98,7 @@ const {
       [
         { offset: 0, backgroundColor: tickingBg, boxShadow: tickingShadow, color: tickingTextColor },
         { offset: 0.1, backgroundColor: notTickingBg, boxShadow: tickingShadow, color: notTickingTextColor },
-        { offset: 0.3, backgroundColor: notTickingBg, boxShadow: noShadow, color: notTickingTextColor },
+        { offset: PAUSED_OFFSET, backgroundColor: notTickingBg, boxShadow: noShadow, color: notTickingTextColor },
         { offset: 0.49999999, backgroundColor: notTickingBg, boxShadow: noShadow, color: notTickingTextColor },
         { offset: 0.5, backgroundColor: tickingBg, boxShadow: tickingShadow, color: tickingTextColor },
         { offset: 0.6, backgroundColor: notTickingBg, boxShadow: tickingShadow, color: notTickingTextColor },
@@ -130,7 +132,7 @@ const {
     ],
   ],
   {
-    immediate: true,
+    immediate: false,
     iterations: Infinity,
     // duration gets set via effect.updateTiming()
   },
@@ -144,6 +146,15 @@ watch(playStateVModel, (newPlayStateVModel) => {
     case 'paused':
     case 'idle':
       pause();
+      // TODO: is there a way to do this without the setTimeout()? I think the
+      // solution involves updating useAnimationGroup() to defer setting
+      // currentTime until a time when the animation has started and the
+      // currentTime can be set validly, but I was having trouble determining
+      // the "when the animation has started and the currentTime can be set
+      // validly" part.
+      setTimeout(() => {
+        currentAnimationProgress.value = PAUSED_OFFSET;
+      }, 0);
       break;
     case 'finished':
       finish();
@@ -151,11 +162,9 @@ watch(playStateVModel, (newPlayStateVModel) => {
     default:
       console.warn(`Unknown play state: ${newPlayStateVModel}`);
   }
-});
-
-watch(playState, (newPlayState) => {
-  playStateVModel.value = newPlayState;
 }, { immediate: true });
+
+syncRef(playState, playStateVModel);
 
 // Handle BPM changes
 watch(() => [animates.value, millisecondsPerBeat.value], () => {
@@ -336,6 +345,7 @@ const textOverflowing = computed(() => !textNotOverflowing.value);
           </div>
         </UTooltip>
         <div
+          v-show="playStateVModel === 'running'"
           ref="sideToSideEffectParentEl"
           data-animate-side-to-side-indicator-parent
           class="absolute will-change-transform inset-0 pointer-events-none"
