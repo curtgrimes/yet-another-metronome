@@ -147,7 +147,6 @@ watch([playStateVModel, pending], ([newPlayStateVModel, newPending], [_, oldPend
   const wasPending = newPending !== oldPending && !initialized;
 
   initialized = true;
-  console.log('foo:', wasPending, wasPending ? initialPlayState : newPlayStateVModel, initialPlayState, newPlayStateVModel);
   switch (wasPending ? initialPlayState : newPlayStateVModel) {
     case 'running':
       setTimeout(() => {
@@ -377,12 +376,7 @@ const textOverflowing = computed(() => !textNotOverflowing.value);
       <MetronomeQuickSettingButton
         tooltip="Change color"
       >
-        <UIcon
-          name="i-ic-outline-palette"
-          data-palette-icon
-          mode="svg"
-          class="text-2xl transition-none"
-        />
+        <IconPalette />
         <template #popover>
           <div class="p-2">
             <ColorInput v-model="metronome.configuration.style.colorBackground" />
@@ -406,21 +400,5 @@ const textOverflowing = computed(() => !textNotOverflowing.value);
   .metronome-title {
     @apply text-5xl ml-2;
   }
-}
-
-:deep([data-palette-icon] circle:nth-of-type(1)) {
-  @apply fill-red-500;
-}
-
-:deep([data-palette-icon] circle:nth-of-type(2)) {
-  @apply fill-orange-400;
-}
-
-:deep([data-palette-icon] circle:nth-of-type(3)) {
-  @apply fill-green-400;
-}
-
-:deep([data-palette-icon] circle:nth-of-type(4)) {
-  @apply fill-blue-400;
 }
 </style>
