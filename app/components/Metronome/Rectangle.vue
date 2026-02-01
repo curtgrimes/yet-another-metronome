@@ -6,9 +6,11 @@ import { twMerge } from 'tailwind-merge';
 const {
   showControls = true,
   showSettingsSectionOnly = undefined,
+  initialPlayState = undefined,
 } = defineProps<{
   showControls?: boolean
   showSettingsSectionOnly?: 'tempo-rhythm' | 'appearance'
+  initialPlayState?: AnimationPlayState
 }>();
 
 const metronome = defineModel<Metronome<MetronomeStyleRectangle>>({ required: true });
@@ -78,7 +80,7 @@ const noShadow = '0 0 0 2px inset var(--border-color)';
 const tickingTextColor = notTickingBg;
 const notTickingTextColor = 'var(--not-ticking-text-color)';
 
-const PAUSED_OFFSET = 0.3;
+const FINISHED_OFFSET = 0.3;
 
 const {
   play,
@@ -88,6 +90,7 @@ const {
   animates,
   playbackRate,
   playState,
+  pending,
 } = useAnimateGroup(
   [
     // All these keyframes are TWO beats long.
@@ -98,7 +101,7 @@ const {
       [
         { offset: 0, backgroundColor: tickingBg, boxShadow: tickingShadow, color: tickingTextColor },
         { offset: 0.1, backgroundColor: notTickingBg, boxShadow: tickingShadow, color: notTickingTextColor },
-        { offset: PAUSED_OFFSET, backgroundColor: notTickingBg, boxShadow: noShadow, color: notTickingTextColor },
+        { offset: FINISHED_OFFSET, backgroundColor: notTickingBg, boxShadow: noShadow, color: notTickingTextColor },
         { offset: 0.49999999, backgroundColor: notTickingBg, boxShadow: noShadow, color: notTickingTextColor },
         { offset: 0.5, backgroundColor: tickingBg, boxShadow: tickingShadow, color: tickingTextColor },
         { offset: 0.6, backgroundColor: notTickingBg, boxShadow: tickingShadow, color: notTickingTextColor },
@@ -138,12 +141,19 @@ const {
   },
 );
 
-watch(playStateVModel, (newPlayStateVModel) => {
-  switch (newPlayStateVModel) {
+let initialized = false;
+
+watch([playStateVModel, pending], ([newPlayStateVModel, newPending], [_, oldPending]) => {
+  const wasPending = newPending !== oldPending && !initialized;
+
+  initialized = true;
+  console.log('foo:', wasPending, wasPending ? initialPlayState : newPlayStateVModel, initialPlayState, newPlayStateVModel);
+  switch (wasPending ? initialPlayState : newPlayStateVModel) {
     case 'running':
-      play();
+      setTimeout(() => {
+        play();
+      }, 0);
       break;
-    case 'paused':
     case 'idle':
       pause();
       // TODO: is there a way to do this without the setTimeout()? I think the
@@ -153,8 +163,11 @@ watch(playStateVModel, (newPlayStateVModel) => {
       // the "when the animation has started and the currentTime can be set
       // validly" part.
       setTimeout(() => {
-        currentAnimationProgress.value = PAUSED_OFFSET;
+        currentAnimationProgress.value = FINISHED_OFFSET;
       }, 0);
+      break;
+    case 'paused':
+      pause();
       break;
     case 'finished':
       finish();
@@ -345,7 +358,7 @@ const textOverflowing = computed(() => !textNotOverflowing.value);
           </div>
         </UTooltip>
         <div
-          v-show="playStateVModel === 'running'"
+          v-show="['running', 'paused'].includes(playStateVModel)"
           ref="sideToSideEffectParentEl"
           data-animate-side-to-side-indicator-parent
           class="absolute will-change-transform inset-0 pointer-events-none"

@@ -5,9 +5,11 @@ import MetronomeRectangle from './Metronome/Rectangle.vue';
 const {
   showControls = true,
   showSettingsSectionOnly = undefined,
+  initialPlayState = undefined,
 } = defineProps<{
   showControls?: boolean
   showSettingsSectionOnly?: 'tempo-rhythm' | 'appearance'
+  initialPlayState?: AnimationPlayState
 }>();
 
 const emit = defineEmits<{ beforeUnmount: [] }>();
@@ -18,9 +20,9 @@ const metronome = defineModel<Metronome>();
 
 const playState = ref<InstanceType<typeof MetronomeRectangle>['$props']['playState']>();
 
-// Pause metronomes in edit mode
+// Do not run metronomes in edit mode by default unless the setting is on
 watch([appMode, playState, playMetronomesInEditMode], ([newAppMode]) => {
-  playState.value = (newAppMode === 'edit' && !playMetronomesInEditMode.value) ? 'paused' : 'running';
+  playState.value = (newAppMode === 'edit' && !playMetronomesInEditMode.value) ? 'idle' : 'running';
 });
 
 onBeforeUnmount(() => {
@@ -36,6 +38,7 @@ onBeforeUnmount(() => {
       v-model:play-state="playState"
       :show-controls
       :show-settings-section-only
+      :initial-play-state
     />
     <div
       v-else

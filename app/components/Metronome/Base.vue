@@ -55,6 +55,7 @@ const contextMenuItems = computed<ContextMenuItem>(() => ([
   {
     label: 'Edit',
     icon: 'i-lucide-pencil',
+    onSelect: () => router.push('/metronomes/0/edit'),
   },
   ...(altPressed.value || debugMode.value
     ? [

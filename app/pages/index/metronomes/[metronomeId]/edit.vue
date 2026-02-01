@@ -91,6 +91,7 @@ const playStateAtStartOfSeek = ref<AnimationPlayState>();
               v-model="metronomes[Number($route.params.metronomeId)]"
               v-model:current-animation-progress="currentAnimationProgress"
               v-model:play-state="playState"
+              initial-play-state="running"
               :show-controls="false"
               @before-unmount="metronomes[Number($route.params.metronomeId)]!.state.visibleInMainView = true"
             />
